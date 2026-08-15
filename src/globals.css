@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+	Valores padrão das variáveis de tema. 
+	
+	O ThemeProvider sobrescreve estas propriedades em tempo de execução (ver src/context/ThemeContext.tsx),
+	mas mantê-las aqui evita um "flash" sem estilo antes do primeiro render.
+*/
+:root {
+	--color-background: #0f172a;
+	--color-surface: #16213a;
+	--color-surface-alt: #1c2b4a;
+	--color-primary: #1d4ed8;
+	--color-primary-hover: #2563eb;
+	--color-accent: #38bdf8;
+	--color-text-primary: #f1f5f9;
+	--color-text-muted: #94a3b8;
+	--color-border: #27354f;
+	--color-board-light: #233252;
+	--color-board-dark: #182238;
+	--color-success: #34d399;
+	--color-danger: #f87171;
+}
+
+html {
+  	scroll-behavior: smooth;
+}
+
+body {
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+	font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+	transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Foco visível e consistente em toda a aplicação (acessibilidade) */
+:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 3px;
+	border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Régua de coordenadas (a-h / 1-8): elemento-assinatura reutilizado
+   como moldura decorativa em várias seções do site. */
+.coord-rule {
+	font-family: "IBM Plex Mono", ui-monospace, monospace;
+	letter-spacing: 0.35em;
+	color: var(--color-text-muted);
+	text-transform: uppercase;
+}

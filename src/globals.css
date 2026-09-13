@@ -2,25 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+
 /*
 	Valores padrão das variáveis de tema. 
 	
-	O ThemeProvider sobrescreve estas propriedades em tempo de execução (ver src/context/ThemeContext.tsx),
+	O ThemeProvider sobrescreve estas propriedades em tempo de execução (ver src/stores/ThemeContext.tsx),
 	mas mantê-las aqui evita um "flash" sem estilo antes do primeiro render.
 */
 :root {
+	/* Variáveis de Cores de cada Tema e seus Valores iniciais*/
+	
+	/* Background: cor principal de fundo  */
 	--color-background: #0f172a;
+	
+	/* Surface: cor de fundo para áreas de conteúdo (Contraste com Background)*/
 	--color-surface: #16213a;
+	
+	/* Surface-Alt: cor de fundo para áreas alternativas */
 	--color-surface-alt: #1c2b4a;
+	
+	/* Primary: cor principal para elementos interativos*/
 	--color-primary: #1d4ed8;
+	
+	/* Primary-Hover: cor principal para elementos interativos no estado de Hover */
 	--color-primary-hover: #2563eb;
+	
+	/* Accent: cor de destaque para elementos visuais*/
 	--color-accent: #38bdf8;
+	
+	/* Text-Primary: cor principal para textos */
 	--color-text-primary: #f1f5f9;
+	
+	/* Text-Muted: cor para textos com menor destaque */
 	--color-text-muted: #94a3b8;
+	
+	/* Border: cor para bordas de elementos */
 	--color-border: #27354f;
+	
+	/* Board-Light: cor para as casas claras do tabuleiro de Xadrez */
 	--color-board-light: #233252;
+	
+	/* Board-Dark: cor para as casas escuras do tabuleiro de Xadrez */
 	--color-board-dark: #182238;
+	
+	/* Success: cor para feedback positivo (Ex.: Cadastro bem sucedido) */
 	--color-success: #34d399;
+	
+	/* Danger: cor para feedback negativo (Ex.: Erro ao cadastrar) */
 	--color-danger: #f87171;
 }
 

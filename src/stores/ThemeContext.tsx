@@ -7,7 +7,7 @@ const STORAGE_KEY = "xadrez:theme";
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-/** Converte "textPrimary" -> "--color-text-primary" para o CSS. */
+/* Converte "textPrimary" -> "--color-text-primary" para o CSS. */
 function toCssVarName(key: string): string {
     return `--color-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
 }
@@ -28,8 +28,11 @@ function applyThemeToDocument(theme: Theme) {
 function getInitialThemeId(): ThemeId {
 
 	if (typeof window === "undefined") return defaultThemeId;
+	
 	const stored = window.localStorage.getItem(STORAGE_KEY) as ThemeId | null;
+	
 	const isValid = stored && themes.some((t) => t.id === stored);
+	
 	return isValid ? stored : defaultThemeId;
 }
 
@@ -55,7 +58,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 		setThemeId,
 	};
 
-	return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+	return (
+		<ThemeContext.Provider value={value}>
+			{children}
+		</ThemeContext.Provider>
+	);
 }
 
 // Hook de acesso ao tema atual e ao seletor de temas. 
@@ -63,7 +70,7 @@ export function useTheme(): ThemeContextValue {
 	const ctx = useContext(ThemeContext);
 	
 	if (!ctx) {
-		throw new Error("useTheme deve ser usado dentro de um <ThemeProvider>");
+		throw new Error("Erro no useTheme");
 	}
 	
 	return ctx;

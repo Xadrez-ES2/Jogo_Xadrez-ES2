@@ -1,37 +1,6 @@
-const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const RANKS = [8, 7, 6, 5, 4, 3, 2, 1];
+import { Board } from "../components/Board";
+import { botOpponent, currentUser } from "../types/player";
 
-/** Placeholder visual do tabuleiro: um grid 8x8 de casas alternadas.
- *  Deve ser substituído pelo componente real de tabuleiro/engine. */
-function BoardPlaceholder() {
-  return (
-    <div className="flex flex-col items-center">
-      <div className="grid aspect-square w-full max-w-[560px] grid-cols-8 overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
-        {RANKS.flatMap((rank, rowIndex) =>
-          FILES.map((file, colIndex) => {
-            const isLight = (rowIndex + colIndex) % 2 === 0;
-            return (
-              <div
-                key={`${file}${rank}`}
-                className={`flex aspect-square items-center justify-center ${
-                  isLight ? "bg-board-light" : "bg-board-dark"
-                }`}
-              >
-                <span className="font-mono text-[10px] text-text-muted/30">
-                  {file}
-                  {rank}
-                </span>
-              </div>
-            );
-          })
-        )}
-      </div>
-      <p className="mt-4 font-mono text-xs uppercase tracking-widest text-text-muted">
-        Tabuleiro — placeholder visual (aguardando engine)
-      </p>
-    </div>
-  );
-}
 
 function MoveHistoryPanel() {
   return (
@@ -76,24 +45,24 @@ function StatusPanel() {
 }
 
 export function Game() {
-  return (
-    <div className="mx-auto max-w-6xl px-6 py-12">
-      <div className="mb-8">
-        <span className="coord-rule text-xs">partida</span>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-text-primary sm:text-4xl">
-          Mesa de jogo
-        </h1>
-      </div>
+	return (
+		<div className="flex flex-1 flex-col items-center px-6 py-6">
+			{/* <div className="mb-8">
+				<span className="coord-rule text-xs">partida</span>
+				<h1 className="mt-2 font-display text-3xl font-semibold text-text-primary sm:text-4xl">
+				Mesa de jogo
+				</h1>
+			</div> */}
+																{/* [1fr_320px] */}
+			<div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+				<Board topPlayer={botOpponent} bottomPlayer={currentUser} />
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
-        <BoardPlaceholder />
-
-        <aside className="flex flex-col gap-6">
-          <StatusPanel />
-          <TimerPanel />
-          <MoveHistoryPanel />
-        </aside>
-      </div>
-    </div>
-  );
+				<aside className="flex flex-col gap-6">
+					<StatusPanel />
+					<TimerPanel />
+					<MoveHistoryPanel />
+				</aside>
+			</div>
+		</div>
+	);
 }

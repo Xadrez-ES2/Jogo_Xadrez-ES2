@@ -1,11 +1,12 @@
 import type { ComponentType } from "react";
 
 /*
-	Descreve uma rota de navegação da aplicação.
+	Tipagem que descreve uma rota de navegação da aplicação.
+	
 	Usado tanto pelo AppRoutes (React Router) quanto pelo
 	Header/Home para gerar os links/botões de navegação
 	a partir de uma única fonte de verdade.
- */
+*/
 export interface RouteConfig {
 	path: string;
 	label: string;

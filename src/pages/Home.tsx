@@ -1,7 +1,5 @@
 import { Button } from "../components/ui/Button";
 
-
-
 export function Home() {
 	return (
 		<div>
@@ -17,13 +15,16 @@ export function Home() {
 				<div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 py-24 text-center sm:py-32">
 				
 					<h1 className="max-w-3xl font-display text-5xl font-semibold leading-[1.05] tracking-tight text-text-primary sm:text-6xl md:text-7xl">
-						Trinta e dois exércitos.
+						
+						Jogo de Xadrez Web
+						
 						<br />
-						<span className="text-accent">Sessenta e quatro casas.</span>
+						<span className="text-accent">Com Gestão de Projeto aplicada</span>
+					
 					</h1>
 
 					<p className="mt-6 max-w-xl font-body text-lg text-text-muted">
-						Um jogo de xadrez construído do zero — sem bibliotecas de regras prontas,
+						Uma Aplicação Web de um Jogo de Xadrez sem bibliotecas de regras prontas,
 						sem APIs externas. Só lógica, tipos e um tabuleiro esperando o primeiro lance.
 					</p>
 
@@ -41,19 +42,15 @@ export function Home() {
 			
 			</section>
 
-			{/* GRID DE NAVEGAÇÃO */}
+			{/* Grid de Navegação */}
 			<section className="mx-auto max-w-6xl px-6 py-20">
 				
 				<div className="mb-12 flex items-end justify-between">
 					
 					<h2 className="font-display text-2xl font-semibold text-text-primary sm:text-3xl">
-						Comece por aqui
+						⚙️ Opções da <span className="text-accent">Aplicação</span>
 					</h2>
 					
-					<span className="hidden font-mono text-xs text-text-muted sm:block">
-						1 · 2 · 3 · 4
-					</span>
-				
 				</div>
 
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -62,16 +59,16 @@ export function Home() {
 						♟ Jogar
 					</Button>
 					
-					<Button variant="secondary" disabled disabledHint="Em breve">
-						⚙ Opções
+					<Button to="/equipe" variant="secondary">
+						👤+ Criar Conta
 					</Button>
-					
+
+					<Button to="/equipe" variant="secondary">
+						🔑 Login
+					</Button>
+
 					<Button to="/projeto" variant="secondary">
 						📘 Sobre o Projeto
-					</Button>
-					
-					<Button to="/equipe" variant="secondary">
-						♛ Equipe
 					</Button>
 				
 				</div>

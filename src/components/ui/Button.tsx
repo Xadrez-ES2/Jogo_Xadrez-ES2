@@ -1,22 +1,17 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
 
 interface BaseProps {
 	children: ReactNode;
 	variant?: ButtonVariant;
-	
-	/* Texto exibido abaixo/ao lado quando o botão está desabilitado */
-	disabledHint?: string;
 	className?: string;
 }
 
 /* Quando `to` é passado, o botão navega via React Router. Caso contrário, é um <button> comum. */
 type ButtonProps = BaseProps &
-	ButtonHTMLAttributes<HTMLButtonElement> & {
-		to?: string;
-	};
+	ButtonHTMLAttributes<HTMLButtonElement> & { to?: string; };
 
 // Classes de estilo para cada variante de botão
 const variantClasses: Record<ButtonVariant, string> = {
@@ -31,7 +26,6 @@ const variantClasses: Record<ButtonVariant, string> = {
 export function Button({
     children,
     variant = "primary",
-    disabledHint,
     className = "",
     to,
     disabled,
@@ -52,22 +46,16 @@ export function Button({
 				<button className={classes} disabled aria-disabled="true" {...rest}>
 					{children}
 				</button>
-				
-				{disabledHint && (
-					<p className="mt-2 text-center font-mono text-xs uppercase tracking-widest text-text-muted">
-						{disabledHint}
-					</p>
-				)}
-			
+		
 			</div>
 		);
 	}
 
 	if (to) {
 		return (
-			<Link to={to} className={classes}>
+			<NavLink to={to} className={classes}>
 				{children}
-			</Link>
+			</NavLink>
 		);
 	}
 

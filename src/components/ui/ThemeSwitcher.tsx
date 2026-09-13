@@ -14,6 +14,7 @@ export function ThemeSwitcher() {
 
 	return (
 		<label className="flex items-center gap-2 text-sm text-text-muted">
+			
 			<span className="hidden font-body sm:inline">Tema</span>
 			
 			<select

@@ -53,15 +53,20 @@ export interface ThemePalette {
 
 export interface Theme {
 	
+	/* String Identificador do tema */
 	id: ThemeId;
+	
 	/* Nome amigável exibido no seletor de temas */
 	label: string;
 	
 	/* Pequena descrição usada como tooltip/legenda */
 	description: string;
+	
+	/* Paleta de cores do tema */
 	palette: ThemePalette;
 }
 
+// Interface do Contexto do Tema, usada pelo ThemeProvider e pelo Hook useTheme.
 export interface ThemeContextValue {
 	theme: Theme;
 	themeId: ThemeId;

@@ -5,7 +5,7 @@ export interface TeamMember {
 	id: string;
 	
 	name: string;
-	role: "Desenvolvedor(a) Full-Stack";
+	role: "Interface Gráfica" | "Máquina de Regras" | "I.A. Adversária";
 	
 	/* URL do avatar/foto. (GitHub Avatar) */
 	avatarUrl: string;

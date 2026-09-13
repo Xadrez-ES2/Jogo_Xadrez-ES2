@@ -17,9 +17,6 @@ export interface RouteConfig {
 	/* Se true, aparece no menu de navegação principal */
 	showInNav: boolean;
 	
-	/* Se true, o item é exibido mas desabilitado (ex: "Opções") */
-	disabled?: boolean;
-	
-	/* Texto auxiliar exibido quando disabled, ex: "Em breve" */
-	disabledHint?: string;
+	/* Se true, o item é exibido usando FocusLayout */
+	inFocusLayout?: boolean;
 }

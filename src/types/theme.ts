@@ -7,7 +7,7 @@
 	sem precisar recarregar a página ou duplicar classes Tailwind.
 */
 
-export type ThemeId = "midnight" | "classicWood" | "light";
+export type ThemeId = "midnight" | "classicWood" | "light" | "ocean" | "highContrast";
 
 export interface ThemePalette {
 	

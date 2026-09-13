@@ -14,26 +14,21 @@ export function Home() {
 				
 				<div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 py-24 text-center sm:py-32">
 				
-					<h1 className="max-w-3xl font-display text-5xl font-semibold leading-[1.05] tracking-tight text-text-primary sm:text-6xl md:text-7xl">
+					<h1 className=" font-display text-5xl font-semibold leading-[1.05] tracking-tight text-text-primary sm:text-6xl md:text-7xl">
 						
 						Jogo de Xadrez Web
 						
 						<br />
-						<span className="text-accent">Com Gestão de Projeto aplicada</span>
+						<span className="text-accent">Engenharia de Software II</span>
 					
 					</h1>
 
-					<p className="mt-6 max-w-xl font-body text-lg text-text-muted">
-						Uma Aplicação Web de um Jogo de Xadrez sem bibliotecas de regras prontas,
-						sem APIs externas. Só lógica, tipos e um tabuleiro esperando o primeiro lance.
-					</p>
-
 					<div className="mt-10 flex flex-col gap-4 sm:flex-row">
-						<Button to="/jogo" variant="primary" className="sm:w-56">
+						<Button to="/game" variant="primary" className="sm:w-56">
 							Jogar agora
 						</Button>
 						
-						<Button to="/projeto" variant="secondary" className="sm:w-56">
+						<Button to="/project" variant="secondary" className="sm:w-56">
 							Ver o projeto
 						</Button>
 					</div>
@@ -44,30 +39,22 @@ export function Home() {
 
 			{/* Grid de Navegação */}
 			<section className="mx-auto max-w-6xl px-6 py-20">
-				
-				<div className="mb-12 flex items-end justify-between">
-					
-					<h2 className="font-display text-2xl font-semibold text-text-primary sm:text-3xl">
-						⚙️ Opções da <span className="text-accent">Aplicação</span>
-					</h2>
-					
-				</div>
 
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					
-					<Button to="/jogo" variant="primary">
+					<Button to="/game" variant="primary">
 						♟ Jogar
 					</Button>
 					
-					<Button to="/equipe" variant="secondary">
+					<Button to="/register" variant="secondary">
 						👤+ Criar Conta
 					</Button>
 
-					<Button to="/equipe" variant="secondary">
+					<Button to="/login" variant="secondary">
 						🔑 Login
 					</Button>
 
-					<Button to="/projeto" variant="secondary">
+					<Button to="/project" variant="secondary">
 						📘 Sobre o Projeto
 					</Button>
 				

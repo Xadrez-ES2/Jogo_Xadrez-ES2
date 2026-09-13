@@ -16,7 +16,7 @@ const methodology: InfoItem[] = [
 	{
 		title: "Kanban de apoio",
 		description:
-		"Quadro com colunas Backlog / A fazer / Em andamento / Em revisão / Concluído para visualizar o fluxo de trabalho.",
+		"Quadro com colunas Backlog / In progress / In review / Done para visualizar o fluxo de trabalho.",
 	},
 	{
 		title: "Roadmap para planejamento",
@@ -173,7 +173,7 @@ export function Project() {
 			<Section
 				eyebrow="time"
 				title="Equipe"
-				description={`${teamMembers.length} desenvolvedores dividindo peões, torres e responsabilidades.`}
+				description={`${teamMembers.length} desenvolvedores dividindo peões, torres e responsabilidades em 3 equipes.`}
 			>
 				<div className="mt-10 flex flex-wrap justify-center gap-12">
 					

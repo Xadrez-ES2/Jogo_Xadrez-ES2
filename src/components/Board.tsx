@@ -1,4 +1,5 @@
 import type { Player } from "../types/player";
+import { PlayerBar } from "./PlayerBar";
 
 const FILES = ["A", "B", "C", "D", "E", "F", "G", "H"];
 const RANKS = [8, 7, 6, 5, 4, 3, 2, 1];
@@ -17,84 +18,7 @@ interface BoardProps {
     bottomPlayer?: Player;
 }
  
-/*
-    Iniciais usadas como fallback visual se o jogador não tem avatar
-*/
-function getInitials(name: string): string {
-    return name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((word) => word[0])
-        .join("")
-        .toUpperCase();
-}
- 
-/*
-    Componente de Barra de identificação de um jogador
-    
-    - Contém avatar, nome, cor das peças e
-    espaço reservado para peças capturadas. 
-*/
-function PlayerBar({ player }: { player?: Player }) {
-    
-    if (!player) {
-        return (
-            <div className="flex items-center justify-between rounded-lg border border-dashed border-border px-4 py-3">
-                <span className="font-mono text-xs text-text-muted/50">Jogador não definido</span>
-            </div>
-        );
-    }
-    
-    return (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-4 py-1">
-            <div className="flex min-w-0 items-center gap-3">
-                
-                {/* Slot de avatar */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-alt">
-                    {player.avatarUrl ? (
-                        <img
-                            src={player.avatarUrl}
-                            alt={`Avatar de ${player.name}`}
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <span className="font-mono text-xs font-semibold text-text-muted">
-                            {getInitials(player.name)}
-                        </span>
-                    )}
-                </div>
-        
-                <div className="min-w-0">
-                    
-                    <p className="truncate font-body text-sm font-semibold text-text-primary">
-                        {player.name}
-                        
-                        {player.rating !== undefined && (
-                            <span className="ml-2 font-mono text-xs font-normal text-text-muted">
-                                {player.rating}
-                            </span>
-                        )}
-                    
-                    </p>
-                
-                    {/* <span className="font-mono text-[10px] uppercase tracking-widest text-text-muted">
-                        {player.isBot ? "Bot" : "Jogador"} · {player.color === "white" ? "Brancas" : "Pretas"}
-                    </span> */}
-                
-                </div>
-            
-            </div>
-    
-            {/* Slot reservado para peças capturadas. */}
-            <div className="hidden shrink-0 items-center gap-1 sm:flex" aria-hidden="true">
-                <span className="font-mono text-[10px] text-text-muted/40">capturas</span>
-            </div>
-        
-        </div>
-    );
-}
- 
+
 /*
     Componente de tabuleiro
 */

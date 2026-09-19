@@ -1,5 +1,6 @@
-import type { Player } from "../types/player";
-import { getInitials } from "../utils/AuxFunctions";
+import type { Player } from "../../types/player";
+import { getInitials } from "../../utils/AuxFunctions";
+
  
 /*
     Componente de Barra de identificação de um jogador

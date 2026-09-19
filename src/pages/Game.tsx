@@ -1,16 +1,8 @@
-import { Board } from "../components/Board";
-import { MoveHistoryPanel } from "../components/MoveHistoryPanel";
-import { StatusPanel } from "../components/StatusPanel";
+import { Board } from "../components/Board_Components/Board";
+import { MoveHistoryPanel } from "../components/Board_Components/MoveHistoryPanel";
+import { StatusPanel } from "../components/Board_Components/StatusPanel";
 import { botOpponent, currentUser } from "../types/player";
 
-
-
-{/* <div className="mb-8">
-				<span className="coord-rule text-xs">partida</span>
-				<h1 className="mt-2 font-display text-3xl font-semibold text-text-primary sm:text-4xl">
-				Mesa de jogo
-				</h1>
-			</div> */}
 
 export function Game() {
 	return (

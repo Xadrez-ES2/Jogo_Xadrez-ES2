@@ -8,6 +8,7 @@ na `engine` (ver seção "Próximos passos").
 ## Como rodar
 
 ```bash
+cd front
 npm install
 npm run dev
 ```

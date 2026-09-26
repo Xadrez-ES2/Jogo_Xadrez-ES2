@@ -8,8 +8,8 @@ import type { PlayablePiece } from "./pieces";
     ajuda o TypeScript a barrar coordenadas inválidas (ex: 'i9') já
     na hora de escrever a engine, não só em runtime.
 */
-export type Files = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
-export type Ranks = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export type Files = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h"; // colunas
+export type Ranks = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // linhas
 
 // Identificador de casa, ex: "e4".
 export type SquareId = `${Files}${Ranks}`;
@@ -21,8 +21,9 @@ export type SquareId = `${Files}${Ranks}`;
 */
 export type BoardState = Partial<Record<SquareId, PlayablePiece>>;
 
-// Um lance já efetuado — casa de origem e destino, em notação algébrica.
+// Um lance efetuado — casa de origem e destino. 
+// Necessário adaptar tipagem para uso de notação algébrica.
 export interface Move {
-  from: SquareId;
-  to: SquareId;
+    from: SquareId;
+    to: SquareId;
 }

@@ -1,3 +1,4 @@
+import Piece3D from "../components/Piece3D";
 import { Button } from "../components/ui/Button";
 
 export function Home() {
@@ -13,7 +14,9 @@ export function Home() {
 				/>
 				
 				<div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 py-24 text-center sm:py-32">
-				
+
+					{/* <Piece3D /> */}
+					
 					<h1 className=" font-display text-5xl font-semibold leading-[1.05] tracking-tight text-text-primary sm:text-6xl md:text-7xl">
 						
 						Jogo de Xadrez Web

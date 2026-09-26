@@ -19,5 +19,5 @@ export interface Piece {
 export interface PlayablePiece {
     piece: Piece;
     color: PieceColor;
-    alive?: boolean; // Booleano para saber se a peça tá viva
+    alive?: boolean; // Booleano para saber se a peça tá viva (Descartável?)
 }

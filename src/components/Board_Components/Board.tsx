@@ -1,7 +1,8 @@
 
+import { initialBoard } from "../../ChessEngine/FEN";
 import type { PieceColor, PlayablePiece } from "../../types/pieces";
 import type { Player } from "../../types/player";
-import type { BoardState, Files, Move, Ranks, SquareId } from "../../types/square";
+import { type BoardState, type Files, type Move, type Ranks, type SquareId } from "../../types/square";
 import { PlayerBar } from "./PlayerBar";
 import { Square } from "./Square";
 
@@ -45,7 +46,7 @@ interface BoardProps {
 export function Board({
     topPlayer,
     bottomPlayer,
-    pieces,
+    pieces = initialBoard,
     selectedSquare,
     legalMoves,
     lastMove,

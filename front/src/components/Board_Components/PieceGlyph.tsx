@@ -34,7 +34,7 @@ export function PieceGlyph({ playablePiece }: { playablePiece: PlayablePiece }) 
     return (
         <span
             aria-hidden="true"
-            className={`pointer-events-none select-none text-[2.1rem] leading-none drop-shadow-sm sm:text-[2.4rem] ${
+            className={`pointer-events-none select-none text-[3rem] leading-none drop-shadow-sm sm:text-[2.4rem] ${
                 playablePiece.color === "white" ? "text-white" : "text-black"
             }`}
         >

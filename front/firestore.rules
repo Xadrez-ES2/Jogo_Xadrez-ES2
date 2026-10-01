@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/matches/{matchId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow read: if isOwner();
+      allow create: if isOwner()
+        && request.resource.data.keys().hasAll(['ownerUid', 'endedAt', 'outcome', 'reason', 'reasonCode', 'difficulty', 'opponent', 'savedAt'])
+        && request.resource.data.keys().hasOnly(['ownerUid', 'endedAt', 'outcome', 'reason', 'reasonCode', 'difficulty', 'opponent', 'savedAt'])
+        && request.resource.data.ownerUid == userId
+        && request.resource.data.endedAt is number
+        && request.resource.data.endedAt > 0
+        && request.resource.data.endedAt <= 8640000000000000
+        && request.resource.data.outcome in ['victory', 'defeat', 'draw']
+        && request.resource.data.reasonCode in ['resignation', 'timeout', 'checkmate', 'draw']
+        && request.resource.data.difficulty in ['easy', 'medium', 'hard', 'not-set']
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() > 0
+        && request.resource.data.reason.size() <= 2048
+        && request.resource.data.opponent is string
+        && request.resource.data.opponent.size() > 0
+        && request.resource.data.opponent.size() <= 200
+        && request.resource.data.savedAt == request.time;
+      // Um resultado concluído não pode ser substituído nem excluído pelo cliente.
+      allow update, delete: if false;
+    }
+  }
+}

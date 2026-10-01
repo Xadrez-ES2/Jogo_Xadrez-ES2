@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../stores/AuthContext";
+import { UserAvatar } from "./UserAvatar";
 
 export function AccountControls() {
     const { user, loading, action, signOut, error } = useAuth();
@@ -7,7 +8,10 @@ export function AccountControls() {
     if (!user) return <NavLink to="/login" className="text-sm font-medium text-text-muted hover:text-text-primary">Entrar</NavLink>;
     return (
         <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
-            <span className="max-w-32 truncate text-text-primary" title={user.displayName}>{user.displayName}</span>
+            <NavLink to="/profile" aria-label={`Abrir perfil de ${user.displayName}`} className="flex min-w-0 items-center gap-2 rounded-md text-text-primary hover:text-accent">
+                <UserAvatar name={user.displayName} photoURL={user.photoURL} />
+                <span className="max-w-24 truncate sm:max-w-32" title={user.displayName}>{user.displayName}</span>
+            </NavLink>
             <button type="button" onClick={() => void signOut()} disabled={action !== null} className="rounded-md border border-border px-3 py-1 text-text-muted hover:border-accent disabled:opacity-50">
                 {action === "signOut" ? "Saindo…" : "Sair"}
             </button>

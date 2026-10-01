@@ -16,16 +16,17 @@ function toAuthUser(user: User): AuthUser {
 
 async function initializeClient() {
     const [{ initializeApp }, sdk] = await Promise.all([import("firebase/app"), import("firebase/auth")]);
-    const auth = sdk.getAuth(initializeApp(config, "chess-auth"));
+    const app = initializeApp(config, "chess-auth");
+    const auth = sdk.getAuth(app);
     auth.languageCode = "pt-BR";
     await sdk.setPersistence(auth, sdk.browserSessionPersistence);
     const provider = new sdk.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
-    return { auth, provider, sdk };
+    return { app, auth, provider, sdk };
 }
 
 let clientPromise: ReturnType<typeof initializeClient> | undefined;
-function getClient() {
+export function getFirebaseClient() {
     if (!configured) throw new Error("Autenticação não configurada.");
     if (!clientPromise) {
         clientPromise = initializeClient().catch((error: unknown) => {
@@ -41,19 +42,19 @@ export const firebaseAuthService: AuthService = {
     subscribe(onUser, onError) {
         let cancelled = false;
         let unsubscribe: (() => void) | undefined;
-        void getClient().then(({ auth, sdk }) => {
+        void getFirebaseClient().then(({ auth, sdk }) => {
             if (cancelled) return;
             unsubscribe = sdk.onAuthStateChanged(auth, (user) => onUser(user ? toAuthUser(user) : null), onError);
         }).catch((error: unknown) => { if (!cancelled) onError(error); });
         return () => { cancelled = true; unsubscribe?.(); };
     },
     async signIn() {
-        const { auth, provider, sdk } = await getClient();
+        const { auth, provider, sdk } = await getFirebaseClient();
         const credential = await sdk.signInWithPopup(auth, provider);
         return { user: toAuthUser(credential.user), isNewUser: sdk.getAdditionalUserInfo(credential)?.isNewUser ?? false };
     },
     async signOut() {
-        const { auth, sdk } = await getClient();
+        const { auth, sdk } = await getFirebaseClient();
         await sdk.signOut(auth);
     },
 };

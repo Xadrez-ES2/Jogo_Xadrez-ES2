@@ -3,12 +3,12 @@
 Base do front-end (React + TypeScript + Tailwind CSS + React Router) para o projeto
 de xadrez do grupo. Contém navegação, sistema de temas e as 4 páginas iniciais.
 **Nenhuma regra de xadrez foi implementada ainda** — isso fica para a próxima etapa,
-na `engine` (ver seção "Próximos passos").
+na `app/src/engine`.
 
 ## Como rodar
 
 ```bash
-cd front
+cd app
 npm install
 npm run dev
 ```
@@ -35,17 +35,55 @@ npm run preview    # serve o build de produção localmente
 
 ## Estrutura de pastas
 
+```text
+Jogo_Xadrez-ES2/
+    README.md
+    LICENSE
+    docs/                 Local reservado para os artefatos do projeto
+        .gitkeep
+    app/                  Aplicação Vite; antiga pasta front/
+        package.json
+        package-lock.json
+        index.html
+        public/
+        firestore.rules
+        src/
+            main.tsx      Ponto de entrada da aplicação
+            interface/
+                App.tsx
+                globals.css
+                FEN.ts    Conversão usada pelo tabuleiro atual
+                components/
+                data/
+                hooks/
+                pages/
+                routes/
+                services/
+                stores/
+                types/
+                utils/
+            engine/
+                .gitkeep
+            ai/
+                .gitkeep
 ```
-src/
-    types/            Interfaces TypeScript (Theme, TeamMember, RouteConfig)
-    stores/           ThemeContext + ThemeProvider (Context API)
-    data/             Dados da aplicação: themes.ts e team.ts
-    routes/           AppRoutes.tsx — fonte única de verdade das rotas
-    components/
-      layout/         Header, Footer, Layout (casco visual das páginas)
-      ui/             Button, Card, ThemeSwitcher (componentes reutilizáveis)
-    pages/            Home, Game (Jogo), Project (Projeto), Team (Equipe)
-    ChessEngine/      Pasta voltada para a implementação da Máquina de Regras do Xadrez
-	AI/               Pasta voltada para a implementação do comportamento computadorizado do oponente 
-    globals.css       Variáveis CSS padrão + estilos globais
-```
+
+Os arquivos de configuração existentes permanecem em `app/`.
+
+A organização prepara a separação entre Interface, Máquina de Regras e IA.
+As dependências planejadas seguem o sentido Interface -> IA/engine e
+IA -> engine; a engine não depende dos outros subgrupos. Os contratos
+públicos via `index.ts` serão implementados no trabalho posterior.
+
+Neste PR, o FEN e os tipos existentes permanecem na interface para
+preservar o tabuleiro atual. Os serviços de autenticação e histórico
+também permanecem na interface até a definição da responsabilidade
+pela persistência. Os componentes duplicados foram preservados.
+
+A pasta `docs/` está preparada para receber os artefatos. Os links
+externos acima permanecem disponíveis; seus documentos ainda precisam
+ser incorporados ao repositório.
+
+Após incorporar a reorganização, execute a instalação de dependências
+dentro de `app/`. Eventuais arquivos locais remanescentes em `front/`
+devem ser conferidos antes de qualquer remoção.

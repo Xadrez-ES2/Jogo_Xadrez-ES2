@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { initialBoard } from "../ChessEngine/FEN";
+import { initialBoard } from "../FEN";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { GameResultModal } from "../components/GameResultModal";

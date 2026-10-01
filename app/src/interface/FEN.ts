@@ -1,5 +1,5 @@
-import type { PieceColor, PieceType } from "../types/pieces";
-import type { BoardState, Files, Ranks, SquareId } from "../types/square";
+import type { PieceColor, PieceType } from "./types/pieces";
+import type { BoardState, Files, Ranks, SquareId } from "./types/square";
 
 /*
 	A notação FEN é uma linha única de texto que descreve o estado exato de um tabuleiro de xadrez.

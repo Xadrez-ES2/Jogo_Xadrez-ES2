@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { initialBoard } from "../ChessEngine/FEN";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
@@ -13,6 +13,9 @@ import { botOpponent, currentUser } from "../types/player";
 import { useChessClock } from "../hooks/useChessClock";
 import type { PieceColor } from "../types/pieces";
 import { useAuth } from "../stores/AuthContext";
+import { useSaveMatch } from "../hooks/useSaveMatch";
+import type { EndReason, MatchRecord } from "../types/matchHistory";
+import { MatchSaveNotice } from "../components/MatchSaveNotice";
 
 
 export function Game() {
@@ -25,6 +28,11 @@ export function Game() {
 	const [showResult, setShowResult] = useState(false);
 	const [isPaused, setIsPaused] = useState(false);
 	const [clockResetKey, setClockResetKey] = useState(0);
+	const [gameId, setGameId] = useState(() => crypto.randomUUID());
+	const [completedMatch, setCompletedMatch] = useState<MatchRecord | null>(null);
+	const finished = useRef(false);
+	const { status: saveStatus, retry: retrySave } = useSaveMatch(completedMatch);
+	const saving = saveStatus === "saving";
 
 	const {
 		arrows,
@@ -37,17 +45,26 @@ export function Game() {
 	// Até integrar o controle de turnos, somente as brancas têm o relógio ativo.
 	const activeColor: PieceColor = "white";
 	const running = !isPaused && result === null;
-	const handleTimeout = useCallback((color: PieceColor) => {
+	const finishGame = useCallback((nextResult: GameResult, reasonCode: EndReason) => {
+		if (finished.current) return;
+		finished.current = true;
 		clearSelection();
 		clearAnnotations();
 		setConfirmResignation(false);
 		setIsPaused(false);
-		setResult((current) => current ?? {
+		setResult(nextResult);
+		setShowResult(true);
+		if (user) setCompletedMatch({
+			id: gameId, ownerUid: user.uid, endedAt: Date.now(), ...nextResult,
+			reasonCode, difficulty: "not-set", opponent: botOpponent.name,
+		});
+	}, [clearSelection, clearAnnotations, user, gameId]);
+	const handleTimeout = useCallback((color: PieceColor) => {
+		finishGame({
 			outcome: color === currentUser.color ? "defeat" : "victory",
 			reason: color === currentUser.color ? "Seu tempo acabou. Vitória do Bot." : "O tempo do Bot acabou. Você venceu.",
-		});
-		setShowResult(true);
-	}, [clearSelection, clearAnnotations]);
+		}, "timeout");
+	}, [finishGame]);
 	const clockTimes = useChessClock({ activeColor, running, resetKey: clockResetKey, onTimeout: handleTimeout });
 
 	// Clique esquerdo "de verdade" limpa as setas/destaques manuais —
@@ -60,15 +77,14 @@ export function Game() {
 	}
 
 	function resign() {
-		clearSelection();
-		clearAnnotations();
-		setConfirmResignation(false);
-		setIsPaused(false);
-		setResult({ outcome: "defeat", reason: "Você desistiu da partida. Vitória do Bot." });
-		setShowResult(true);
+		finishGame({ outcome: "defeat", reason: "Você desistiu da partida. Vitória do Bot." }, "resignation");
 	}
 
 	function restart() {
+		if (saving) return;
+		finished.current = false;
+		setCompletedMatch(null);
+		setGameId(crypto.randomUUID());
 		clearSelection();
 		clearAnnotations();
 		setResult(null);
@@ -104,6 +120,8 @@ export function Game() {
 						<section aria-live="polite" className="rounded-xl border border-border bg-surface p-5">
 							<h2 className="font-display text-lg font-semibold">Partida encerrada · {resultTitles[result.outcome]}</h2>
 							<p className="mt-3 text-sm text-text-muted">{result.reason}</p>
+							<MatchSaveNotice status={saveStatus} onRetry={retrySave} />
+							<Button to="/profile" variant="ghost" className="mt-3">Ver meu perfil</Button>
 							<Button variant="ghost" className="mt-4" onClick={() => setShowResult(true)}>Ver resultado</Button>
 						</section>
 					) : isPaused ? (
@@ -118,7 +136,7 @@ export function Game() {
 							{isPaused ? "Retomar partida" : "Pausar partida"}
 						</Button>
 					)}
-					{result ? <Button onClick={restart}>Nova partida</Button> : (
+					{result ? <Button onClick={restart} disabled={saving}>Nova partida</Button> : (
 						<Button variant="secondary" onClick={() => setConfirmResignation(true)}>Desistir da partida</Button>
 					)}
 				</aside>
@@ -134,7 +152,9 @@ export function Game() {
 				</Modal>
 			)}
 			{result && showResult && (
-				<GameResultModal result={result} onClose={() => setShowResult(false)} onRestart={restart} />
+				<GameResultModal result={result} onClose={() => setShowResult(false)} onRestart={restart} restartingDisabled={saving}>
+					<MatchSaveNotice status={saveStatus} onRetry={retrySave} />
+				</GameResultModal>
 			)}
 		
 		</div>

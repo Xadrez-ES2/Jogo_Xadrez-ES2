@@ -5,6 +5,7 @@ import { type BoardState, type Files, type Move, type Ranks, type SquareId } fro
 import { BoardArrowsOverlay } from "./BoardArrowOverlay";
 import { PlayerBar } from "./PlayerBar";
 import { Square } from "./Square";
+import type { ClockTimes } from "../../hooks/useChessClock";
 
 /* Coordenadas "reais" do tabuleiro — não mudam com a orientação visual. */
 const BASE_FILES: Files[] = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -12,6 +13,8 @@ const BASE_RANKS: Ranks[] = [8, 7, 6, 5, 4, 3, 2, 1];
 
 interface BoardProps {
     disabled?: boolean;
+    clockTimes?: ClockTimes;
+    activeClock?: PieceColor;
     // Jogador exibido acima do tabuleiro (o bot).
     topPlayer?: Player;
 
@@ -58,6 +61,8 @@ interface BoardProps {
 
 export function Board({
     disabled = false,
+    clockTimes,
+    activeClock,
     topPlayer,
     bottomPlayer,
     pieces,
@@ -84,14 +89,13 @@ export function Board({
         return lastMove?.from === squareId || lastMove?.to === squareId;
     }
 
-    console.log(highlightedSquares);
  
     return (
         <div className="flex flex-col items-center gap-3">
             
             <div className="w-full max-w-[560px]">
                 
-                <PlayerBar player={topPlayer} />
+                <PlayerBar player={topPlayer} remainingMs={topPlayer ? clockTimes?.[topPlayer.color] : undefined} clockActive={topPlayer?.color === activeClock} />
             
             </div>
     
@@ -180,7 +184,7 @@ export function Board({
     
             <div className="w-full max-w-[560px]">
                 
-                <PlayerBar player={bottomPlayer} />
+                <PlayerBar player={bottomPlayer} remainingMs={bottomPlayer ? clockTimes?.[bottomPlayer.color] : undefined} clockActive={bottomPlayer?.color === activeClock} />
             
             </div>
         

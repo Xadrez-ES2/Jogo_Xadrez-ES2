@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { initialBoard } from "../ChessEngine/FEN";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
@@ -10,6 +10,8 @@ import { StatusPanel } from "../components/Board_Components/StatusPanel";
 import { useBoardArrows } from "../hooks/useBoardArrows";
 import { useSquareSelection } from "../hooks/useSquareSelection";
 import { botOpponent, currentUser } from "../types/player";
+import { useChessClock } from "../hooks/useChessClock";
+import type { PieceColor } from "../types/pieces";
 
 
 export function Game() {
@@ -19,6 +21,7 @@ export function Game() {
 	const [result, setResult] = useState<GameResult | null>(null);
 	const [showResult, setShowResult] = useState(false);
 	const [isPaused, setIsPaused] = useState(false);
+	const [clockResetKey, setClockResetKey] = useState(0);
 
 	const {
 		arrows,
@@ -27,6 +30,22 @@ export function Game() {
 		handleSquareContextMouseUp,
 		clearAnnotations,
 	} = useBoardArrows();
+
+	// Até integrar o controle de turnos, somente as brancas têm o relógio ativo.
+	const activeColor: PieceColor = "white";
+	const running = !isPaused && result === null;
+	const handleTimeout = useCallback((color: PieceColor) => {
+		clearSelection();
+		clearAnnotations();
+		setConfirmResignation(false);
+		setIsPaused(false);
+		setResult((current) => current ?? {
+			outcome: color === currentUser.color ? "defeat" : "victory",
+			reason: color === currentUser.color ? "Seu tempo acabou. Vitória do Bot." : "O tempo do Bot acabou. Você venceu.",
+		});
+		setShowResult(true);
+	}, [clearSelection, clearAnnotations]);
+	const clockTimes = useChessClock({ activeColor, running, resetKey: clockResetKey, onTimeout: handleTimeout });
 
 	// Clique esquerdo "de verdade" limpa as setas/destaques manuais —
 	// mesma convenção do Lichess/chess.com, pra anotação antiga não
@@ -52,6 +71,7 @@ export function Game() {
 		setResult(null);
 		setShowResult(false);
 		setIsPaused(false);
+		setClockResetKey((key) => key + 1);
 	}
 	
 	return (
@@ -66,6 +86,8 @@ export function Game() {
 					bottomPlayer={currentUser} 
 					pieces={initialBoard}
 					disabled={result !== null || isPaused}
+					clockTimes={clockTimes}
+					activeClock={running ? activeColor : undefined}
 					selectedSquare={selectedSquare}
 					onSquareSelect={handleSquareLeftClick}
 					arrows={arrows}

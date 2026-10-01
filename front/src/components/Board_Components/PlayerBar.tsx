@@ -1,5 +1,6 @@
 import type { Player } from "../../types/player";
 import { getInitials } from "../../utils/AuxFunctions";
+import { ChessClock } from "./ChessClock";
 
  
 /*
@@ -8,7 +9,7 @@ import { getInitials } from "../../utils/AuxFunctions";
     - Contém avatar, nome, cor das peças e
     espaço reservado para peças capturadas. 
 */
-export function PlayerBar({ player }: { player?: Player }) {
+export function PlayerBar({ player, remainingMs, clockActive = false }: { player?: Player; remainingMs?: number; clockActive?: boolean }) {
     
     if (!player) {
         return (
@@ -59,12 +60,10 @@ export function PlayerBar({ player }: { player?: Player }) {
             
             </div>
     
-            {/* Slot reservado para Tempo. */}
-            <div className="flex items-center justify-between rounded-lg border border-border bg-surface-alt px-2 py-1.5 hidden shrink-0 gap-1 sm:flex" aria-hidden="true">
-                <span className="font-mono text-[16px] text-text-muted/40">10:00</span>
-            </div>
+            {remainingMs !== undefined && (
+                <ChessClock remainingMs={remainingMs} active={clockActive} playerName={player.name} />
+            )}
         
         </div>
     );
 }
- 

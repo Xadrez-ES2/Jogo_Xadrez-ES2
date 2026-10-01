@@ -1,4 +1,3 @@
-import Piece3D from "../components/Piece3D";
 import { Button } from "../components/ui/Button";
 
 export function Home() {

@@ -4,6 +4,7 @@ import { getPlayablePieceAccessibleLabel, PieceGlyph } from "./PieceGlyph";
 
 
 interface SquareProps {
+    disabled?: boolean;
     
     // Identificador de casa, ex: "e4".
     id: SquareId;
@@ -44,6 +45,7 @@ interface SquareProps {
     em informações/dados/estado concedido(s) pelo Tabuleiro (<Board />).
 */
 export function Square({
+    disabled = false,
     id,
     isLight,
     piece,
@@ -63,11 +65,12 @@ export function Square({
 
     return (
         <button
+            disabled={disabled}
             type="button"
             onClick={() => onSelect?.(id)}
             onContextMenu={(event) => event.preventDefault()}
-            onMouseDown={(event) => onContextMouseDown?.(id, event)}
-            onMouseUp={(event) => onContextMouseUp?.(id, event)}
+            onMouseDown={(event) => { if (!disabled) onContextMouseDown?.(id, event); }}
+            onMouseUp={(event) => { if (!disabled) onContextMouseUp?.(id, event); }}
             aria-label={accessibleLabel}
             aria-pressed={isSelected}
             className={`relative flex aspect-square cursor-default items-center justify-center transition-colors ${

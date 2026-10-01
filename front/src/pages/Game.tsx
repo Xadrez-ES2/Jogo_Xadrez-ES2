@@ -2,6 +2,7 @@ import { useState } from "react";
 import { initialBoard } from "../ChessEngine/FEN";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
+import { GameResultModal } from "../components/GameResultModal";
 import { type GameResult, resultTitles } from "../types/gameResult";
 import { Board } from "../components/Board_Components/Board";
 import { MoveHistoryPanel } from "../components/Board_Components/MoveHistoryPanel";
@@ -16,6 +17,7 @@ export function Game() {
 	const { selectedSquare, handleSquareSelect, clearSelection } = useSquareSelection();
 	const [confirmResignation, setConfirmResignation] = useState(false);
 	const [result, setResult] = useState<GameResult | null>(null);
+	const [showResult, setShowResult] = useState(false);
 
 	const {
 		arrows,
@@ -39,12 +41,14 @@ export function Game() {
 		clearAnnotations();
 		setConfirmResignation(false);
 		setResult({ outcome: "defeat", reason: "Você desistiu da partida. Vitória do Bot." });
+		setShowResult(true);
 	}
 
 	function restart() {
 		clearSelection();
 		clearAnnotations();
 		setResult(null);
+		setShowResult(false);
 	}
 	
 	return (
@@ -72,6 +76,7 @@ export function Game() {
 						<section aria-live="polite" className="rounded-xl border border-border bg-surface p-5">
 							<h2 className="font-display text-lg font-semibold">Partida encerrada · {resultTitles[result.outcome]}</h2>
 							<p className="mt-3 text-sm text-text-muted">{result.reason}</p>
+							<Button variant="ghost" className="mt-4" onClick={() => setShowResult(true)}>Ver resultado</Button>
 						</section>
 					) : <StatusPanel />}
 					<MoveHistoryPanel />
@@ -89,6 +94,9 @@ export function Game() {
 						<Button variant="secondary" className="text-danger" onClick={resign}>Confirmar desistência</Button>
 					</div>
 				</Modal>
+			)}
+			{result && showResult && (
+				<GameResultModal result={result} onClose={() => setShowResult(false)} onRestart={restart} />
 			)}
 		
 		</div>

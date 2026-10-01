@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { ThemeSwitcher } from "../ui/ThemeSwitcher";
+import { AccountControls } from "../auth/AccountControls";
 
 /*
     Layout alternativo ao <Layout /> padrão (Header + Footer completos).
@@ -28,7 +29,10 @@ export function FocusLayout() {
                     
                     </NavLink>
             
-                    <ThemeSwitcher />
+                    <div className="flex flex-wrap items-center justify-end gap-3">
+                        <AccountControls />
+                        <ThemeSwitcher />
+                    </div>
                 </div>
             
             </header>

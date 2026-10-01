@@ -11,9 +11,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "firebase": "^12.19.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.13.6"
   },
   "devDependencies": {
     "@types/jsdom": "30.0.0",

@@ -19,7 +19,7 @@ export const routeConfig: RouteConfig[] = [
 	{ path: "/", label: "Início", element: Home, showInNav: true, inFocusLayout: false },
 	{ path: "/game", label: "Jogar", element: Game, showInNav: true, inFocusLayout: true },
 	{ path: "/project", label: "Sobre o Projeto", element: Project, showInNav: true, inFocusLayout: false },
-	{ path: "/login", label: "Login", element: Login, showInNav: true, inFocusLayout: true },
+	{ path: "/login", label: "Login", element: Login, showInNav: false, inFocusLayout: true },
 	{ path: "/register", label: "Cadastrar", element: Register, showInNav: false, inFocusLayout: true },
 	{ path: "/profile", label: "Perfil", element: Profile, showInNav: false, inFocusLayout: false },
 ];

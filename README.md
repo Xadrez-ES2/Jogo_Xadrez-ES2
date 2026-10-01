@@ -24,6 +24,8 @@ npm run preview    # serve o build de produção localmente
 
 ## Documentação
 
+- [Configuração e teste de cadastro/login Google](front/docs/authentication.md)
+
 - [APF + COCOMO](https://docs.google.com/document/d/1EVSMWwQf2x0DyggbttoriSL-Q8-bGc5_7kmCcwxzafc/edit)
 - [Apresentação 1](https://docs.google.com/document/d/1DH66TKas2vvzte7xmB3b2CrciOC7Ddo6C2Cyp-zUslA/edit)
 - [Burndown](https://docs.google.com/spreadsheets/d/1FBr8I2gCw6ORi3hM9aUdc5sDjHnZ36zCOSjkazYToZE/edit)

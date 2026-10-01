@@ -1,11 +1,7 @@
 
 
-export function Register() {
-    return (
-        <div className="flex flex-1 bg-aquamarine-50">
-            <h1>Cadastrar</h1>
+import { AuthPage } from "../components/auth/AuthPage";
 
-        </div>
-        
-    )
+export function Register() {
+    return <AuthPage mode="register" />;
 }

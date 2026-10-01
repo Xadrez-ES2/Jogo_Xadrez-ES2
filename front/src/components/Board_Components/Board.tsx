@@ -11,6 +11,7 @@ const BASE_FILES: Files[] = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const BASE_RANKS: Ranks[] = [8, 7, 6, 5, 4, 3, 2, 1];
 
 interface BoardProps {
+    disabled?: boolean;
     // Jogador exibido acima do tabuleiro (o bot).
     topPlayer?: Player;
 
@@ -56,6 +57,7 @@ interface BoardProps {
 }
 
 export function Board({
+    disabled = false,
     topPlayer,
     bottomPlayer,
     pieces,
@@ -128,6 +130,7 @@ export function Board({
                     
                                     return (
                                         <Square
+                                            disabled={disabled}
                                             key={squareId}
                                             id={squareId}
                                             isLight={isLight}

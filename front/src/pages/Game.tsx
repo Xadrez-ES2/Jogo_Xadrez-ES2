@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { initialBoard } from "../ChessEngine/FEN";
+import { Button } from "../components/ui/Button";
+import { Modal } from "../components/ui/Modal";
+import { type GameResult, resultTitles } from "../types/gameResult";
 import { Board } from "../components/Board_Components/Board";
 import { MoveHistoryPanel } from "../components/Board_Components/MoveHistoryPanel";
 import { StatusPanel } from "../components/Board_Components/StatusPanel";
@@ -9,7 +13,9 @@ import { botOpponent, currentUser } from "../types/player";
 
 export function Game() {
 	
-	const { selectedSquare, handleSquareSelect } = useSquareSelection();
+	const { selectedSquare, handleSquareSelect, clearSelection } = useSquareSelection();
+	const [confirmResignation, setConfirmResignation] = useState(false);
+	const [result, setResult] = useState<GameResult | null>(null);
 
 	const {
 		arrows,
@@ -23,8 +29,22 @@ export function Game() {
 	// mesma convenção do Lichess/chess.com, pra anotação antiga não
 	// ficar acumulada por cima do próximo lance.
 	function handleSquareLeftClick(square: Parameters<typeof handleSquareSelect>[0]) {
+		if (result) return;
 		clearAnnotations();
 		handleSquareSelect(square);
+	}
+
+	function resign() {
+		clearSelection();
+		clearAnnotations();
+		setConfirmResignation(false);
+		setResult({ outcome: "defeat", reason: "Você desistiu da partida. Vitória do Bot." });
+	}
+
+	function restart() {
+		clearSelection();
+		clearAnnotations();
+		setResult(null);
 	}
 	
 	return (
@@ -38,6 +58,7 @@ export function Game() {
 					topPlayer={botOpponent}
 					bottomPlayer={currentUser} 
 					pieces={initialBoard}
+					disabled={result !== null}
 					selectedSquare={selectedSquare}
 					onSquareSelect={handleSquareLeftClick}
 					arrows={arrows}
@@ -47,11 +68,28 @@ export function Game() {
 				/>
 		
 				<aside className="flex flex-col gap-6">
-					<StatusPanel />
+					{result ? (
+						<section aria-live="polite" className="rounded-xl border border-border bg-surface p-5">
+							<h2 className="font-display text-lg font-semibold">Partida encerrada · {resultTitles[result.outcome]}</h2>
+							<p className="mt-3 text-sm text-text-muted">{result.reason}</p>
+						</section>
+					) : <StatusPanel />}
 					<MoveHistoryPanel />
+					{result ? <Button onClick={restart}>Nova partida</Button> : (
+						<Button variant="secondary" onClick={() => setConfirmResignation(true)}>Desistir da partida</Button>
+					)}
 				</aside>
 			
 			</div>
+			{confirmResignation && (
+				<Modal title="Desistir da partida?" onClose={() => setConfirmResignation(false)}>
+					<p className="mt-3 text-text-muted">Ao desistir, você perde a partida. Deseja continuar?</p>
+					<div className="mt-6 flex flex-col gap-3 sm:flex-row">
+						<Button variant="secondary" onClick={() => setConfirmResignation(false)} autoFocus>Continuar jogando</Button>
+						<Button variant="secondary" className="text-danger" onClick={resign}>Confirmar desistência</Button>
+					</div>
+				</Modal>
+			)}
 		
 		</div>
 	);

@@ -18,6 +18,7 @@ export function Game() {
 	const [confirmResignation, setConfirmResignation] = useState(false);
 	const [result, setResult] = useState<GameResult | null>(null);
 	const [showResult, setShowResult] = useState(false);
+	const [isPaused, setIsPaused] = useState(false);
 
 	const {
 		arrows,
@@ -31,7 +32,7 @@ export function Game() {
 	// mesma convenção do Lichess/chess.com, pra anotação antiga não
 	// ficar acumulada por cima do próximo lance.
 	function handleSquareLeftClick(square: Parameters<typeof handleSquareSelect>[0]) {
-		if (result) return;
+		if (result || isPaused) return;
 		clearAnnotations();
 		handleSquareSelect(square);
 	}
@@ -40,6 +41,7 @@ export function Game() {
 		clearSelection();
 		clearAnnotations();
 		setConfirmResignation(false);
+		setIsPaused(false);
 		setResult({ outcome: "defeat", reason: "Você desistiu da partida. Vitória do Bot." });
 		setShowResult(true);
 	}
@@ -49,6 +51,7 @@ export function Game() {
 		clearAnnotations();
 		setResult(null);
 		setShowResult(false);
+		setIsPaused(false);
 	}
 	
 	return (
@@ -62,7 +65,7 @@ export function Game() {
 					topPlayer={botOpponent}
 					bottomPlayer={currentUser} 
 					pieces={initialBoard}
-					disabled={result !== null}
+					disabled={result !== null || isPaused}
 					selectedSquare={selectedSquare}
 					onSquareSelect={handleSquareLeftClick}
 					arrows={arrows}
@@ -78,8 +81,18 @@ export function Game() {
 							<p className="mt-3 text-sm text-text-muted">{result.reason}</p>
 							<Button variant="ghost" className="mt-4" onClick={() => setShowResult(true)}>Ver resultado</Button>
 						</section>
+					) : isPaused ? (
+						<section role="status" className="rounded-xl border border-accent bg-surface p-5">
+							<h2 className="font-display text-lg font-semibold text-accent">Partida pausada</h2>
+							<p className="mt-3 text-sm text-text-muted">Retome a partida para interagir com o tabuleiro.</p>
+						</section>
 					) : <StatusPanel />}
 					<MoveHistoryPanel />
+					{!result && (
+						<Button variant="secondary" aria-pressed={isPaused} onClick={() => setIsPaused((paused) => !paused)}>
+							{isPaused ? "Retomar partida" : "Pausar partida"}
+						</Button>
+					)}
 					{result ? <Button onClick={restart}>Nova partida</Button> : (
 						<Button variant="secondary" onClick={() => setConfirmResignation(true)}>Desistir da partida</Button>
 					)}

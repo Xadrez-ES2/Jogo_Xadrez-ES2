@@ -76,6 +76,61 @@ test("desistência: cancelar, Escape, confirmar, bloquear tabuleiro e reiniciar"
     }
 });
 
+test("pausa preserva seleção e anotações, bloqueia interação e permite retomada", async () => {
+    const root = createRoot(document.getElementById("root")!);
+    await act(() => root.render(<MemoryRouter><Game /></MemoryRouter>));
+    try {
+        const selected = document.querySelector<HTMLButtonElement>('[aria-label^="Casa e2,"]')!;
+        const annotated = document.querySelector<HTMLButtonElement>('[aria-label^="Casa d4,"]')!;
+        const target = document.querySelector<HTMLButtonElement>('[aria-label^="Casa e4,"]')!;
+        const annotate = async (square: HTMLElement) => {
+            await act(() => {
+                square.dispatchEvent(new dom.window.MouseEvent("mousedown", { button: 2, bubbles: true }));
+                square.dispatchEvent(new dom.window.MouseEvent("mouseup", { button: 2, bubbles: true }));
+            });
+        };
+        await click(selected);
+        await annotate(annotated);
+        assert.ok(annotated.querySelector(".bg-danger"));
+        await click(button("Pausar partida"));
+        assert.match(document.querySelector('[role="status"]')!.textContent!, /Partida pausada/);
+        assert.equal(button("Retomar partida").getAttribute("aria-pressed"), "true");
+        assert.equal(document.querySelectorAll('[aria-label^="Casa "]:disabled').length, 64);
+        await click(target);
+        await annotate(annotated);
+        await annotate(target);
+        assert.equal(selected.getAttribute("aria-pressed"), "true");
+        assert.equal(target.getAttribute("aria-pressed"), "false");
+        assert.ok(annotated.querySelector(".bg-danger"));
+        assert.equal(target.querySelector(".bg-danger"), null);
+
+        await click(button("Retomar partida"));
+        assert.equal(document.querySelector('[role="status"]'), null);
+        assert.equal(button("Pausar partida").getAttribute("aria-pressed"), "false");
+        assert.equal(document.querySelectorAll('[aria-label^="Casa "]:disabled').length, 0);
+        assert.equal(selected.getAttribute("aria-pressed"), "true");
+        assert.ok(annotated.querySelector(".bg-danger"));
+        await click(target);
+        assert.equal(target.getAttribute("aria-pressed"), "true");
+        assert.equal(annotated.querySelector(".bg-danger"), null);
+
+        // Cancelar desistência mantém a pausa; confirmar encerra e limpa a pausa.
+        await click(button("Pausar partida"));
+        await click(button("Desistir da partida"));
+        await click(button("Continuar jogando"));
+        assert.equal(target.disabled, true);
+        button("Retomar partida");
+        await click(button("Desistir da partida"));
+        await click(button("Confirmar desistência"));
+        assert.equal([...document.querySelectorAll("button")].some((item) => item.textContent === "Retomar partida"), false);
+        await click(button("Jogar novamente"));
+        assert.equal(target.disabled, false);
+        assert.equal(button("Pausar partida").getAttribute("aria-pressed"), "false");
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
 for (const outcome of ["victory", "defeat", "draw"] as const) {
     test(`pop-up apresenta ${resultTitles[outcome]} e suas ações`, async () => {
         const root = createRoot(document.getElementById("root")!);

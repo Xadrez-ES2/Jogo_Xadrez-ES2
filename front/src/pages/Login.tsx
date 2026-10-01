@@ -1,7 +1,7 @@
 
 
+import { AuthPage } from "../components/auth/AuthPage";
+
 export function Login() {
-    return (
-        <h1>Login</h1>
-    )
+    return <AuthPage mode="login" />;
 }

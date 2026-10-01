@@ -12,9 +12,12 @@ import { useSquareSelection } from "../hooks/useSquareSelection";
 import { botOpponent, currentUser } from "../types/player";
 import { useChessClock } from "../hooks/useChessClock";
 import type { PieceColor } from "../types/pieces";
+import { useAuth } from "../stores/AuthContext";
 
 
 export function Game() {
+	const { user } = useAuth();
+	const player = user ? { ...currentUser, id: user.uid, name: user.displayName, avatarUrl: user.photoURL ?? "" } : currentUser;
 	
 	const { selectedSquare, handleSquareSelect, clearSelection } = useSquareSelection();
 	const [confirmResignation, setConfirmResignation] = useState(false);
@@ -83,7 +86,7 @@ export function Game() {
 				
 				<Board 
 					topPlayer={botOpponent}
-					bottomPlayer={currentUser} 
+					bottomPlayer={player}
 					pieces={initialBoard}
 					disabled={result !== null || isPaused}
 					clockTimes={clockTimes}

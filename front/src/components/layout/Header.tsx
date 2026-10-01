@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { navRoutes } from "../../routes/AppRoutes";
 import { ThemeSwitcher } from "../ui/ThemeSwitcher";
+import { AccountControls } from "../auth/AccountControls";
 
 /*
 	Cabeçalho fixo, mobile-friendly e móvel:
@@ -40,6 +41,7 @@ export function Header() {
 				
 				{/* Seletor de Tema de cor (Futuramente será o Modal de Opções) */}
 				<div className="hidden items-center gap-4 md:flex">
+					<AccountControls />
 					<ThemeSwitcher />
 				</div>
 				
@@ -72,6 +74,7 @@ export function Header() {
 					)}
 					
 					<div className="pt-2">
+						<AccountControls />
 						<ThemeSwitcher />
 					</div>
 				

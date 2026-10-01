@@ -25,7 +25,7 @@ export function Header() {
 					<span aria-hidden="true" className="text-2xl text-accent">
 						♞
 					</span>
-					Xadrez
+					<span className="hidden sm:inline">Xadrez</span>
 				</NavLink>
 
 				{/* Navegação Principal, utilizando variável 'navRoutes' para dinamizar, definida */}
@@ -40,9 +40,9 @@ export function Header() {
 				</nav>
 				
 				{/* Seletor de Tema de cor (Futuramente será o Modal de Opções) */}
-				<div className="hidden items-center gap-4 md:flex">
+				<div className="flex min-w-0 items-center gap-3">
 					<AccountControls />
-					<ThemeSwitcher />
+					<div className="hidden md:block"><ThemeSwitcher /></div>
 				</div>
 				
 				{/* Botão do Menu Hambúrguer para telas menores (mobile) */}
@@ -74,7 +74,6 @@ export function Header() {
 					)}
 					
 					<div className="pt-2">
-						<AccountControls />
 						<ThemeSwitcher />
 					</div>
 				

@@ -1,5 +1,4 @@
-// Tipos da engine compartilhados com a interface e a IA (contrato).
-// Mudancas aqui precisam ser aprovadas pelos tres subgrupos.
+// Contratos da Engine
 
 // Casa: [linha, coluna]. Linha 0 = fileira 8, coluna 0 = coluna a.
 export type Square = readonly [number, number];

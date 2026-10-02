@@ -11,6 +11,6 @@ export const KNIGHT_MOVES: readonly [number, number][] = [
 
 export class KnightStrategy implements PieceStrategy {
   moves(board: Board, from: Square): Square[] {
-    return jump(board, from, KNIGHT_JUMPS);
+    return jump(board, from, KNIGHT_MOVES);
   }
 }

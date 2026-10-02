@@ -41,7 +41,7 @@ Jogo_Xadrez-ES2/
     LICENSE
     docs/                 Local reservado para os artefatos do projeto
         .gitkeep
-    app/                  Aplicação Vite; antiga pasta front/
+    app/                  Aplicação Vite;
         package.json
         package-lock.json
         index.html
@@ -67,23 +67,3 @@ Jogo_Xadrez-ES2/
             ai/
                 .gitkeep
 ```
-
-Os arquivos de configuração existentes permanecem em `app/`.
-
-A organização prepara a separação entre Interface, Máquina de Regras e IA.
-As dependências planejadas seguem o sentido Interface -> IA/engine e
-IA -> engine; a engine não depende dos outros subgrupos. Os contratos
-públicos via `index.ts` serão implementados no trabalho posterior.
-
-Neste PR, o FEN e os tipos existentes permanecem na interface para
-preservar o tabuleiro atual. Os serviços de autenticação e histórico
-também permanecem na interface até a definição da responsabilidade
-pela persistência. Os componentes duplicados foram preservados.
-
-A pasta `docs/` está preparada para receber os artefatos. Os links
-externos acima permanecem disponíveis; seus documentos ainda precisam
-ser incorporados ao repositório.
-
-Após incorporar a reorganização, execute a instalação de dependências
-dentro de `app/`. Eventuais arquivos locais remanescentes em `front/`
-devem ser conferidos antes de qualquer remoção.

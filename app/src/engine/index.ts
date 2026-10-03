@@ -6,3 +6,4 @@ export { sameSquare, isInside, containsSquare } from './board/square';
 export { getPiece } from './board/board';
 export { createGame } from './game/createGame';
 export { getLegalMoves } from './moves/legalMoves';
+export { applyMove } from './game/applyMove';

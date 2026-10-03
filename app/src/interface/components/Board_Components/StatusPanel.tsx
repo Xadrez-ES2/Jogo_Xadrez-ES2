@@ -1,23 +1,16 @@
+import type { PieceColor } from "../../types/pieces";
+import type { GameMode } from "../../types/gameSetup";
 
-
-
-export function StatusPanel() {
+export function StatusPanel({ activeColor, mode }: { activeColor: PieceColor; mode: GameMode }) {
     return (
-        
-        <div className="rounded-xl border border-border bg-surface p-5">
+        <section aria-live="polite" className="rounded-xl border border-border bg-surface p-5">
             <h2 className="font-display text-lg font-semibold text-text-primary">Status</h2>
-            
-            <p className="mt-3 font-body text-sm text-text-muted">
-                
-                Vez das <span className="font-semibold text-accent">brancas</span>. 
-                <br />
-                <br />
-                
-                Painel voltado para exibir informações sobre o status da partida, como
-                se há xeque, se há peça cravada, talvez vantagem de material, etc.
-            
+            <p className="mt-3 text-sm text-text-muted">
+                Vez das <span className="font-semibold text-accent">{activeColor === "white" ? "brancas" : "pretas"}</span>.
             </p>
-        
-        </div>
+            <p className="mt-3 text-sm text-text-muted">
+                {mode === "human-human" ? "Partida local: as duas pessoas jogam neste dispositivo." : mode === "ai-ai" || activeColor === "black" ? "Aguardando a IA. A resposta automática ainda não está disponível." : "Selecione uma peça branca e depois um destino destacado."}
+            </p>
+        </section>
     );
 }

@@ -1,6 +1,6 @@
 import { useMemo, useReducer } from "react";
 import { applyMove, createGame, getLegalMoves, getPiece, sameSquare } from "../../engine";
-import type { GameState, Square, PieceType as EnginePieceType } from "../../engine";
+import type { GameState, Square } from "../../engine";
 import type { PieceColor, PieceType } from "../types/pieces";
 import type { BoardState, Move, SquareId } from "../types/square";
 

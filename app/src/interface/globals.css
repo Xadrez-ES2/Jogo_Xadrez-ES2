@@ -1,7 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../../tailwind.config.js";
 
+@utility bg-board {
+	background-size: 64px 64px;
+}
 
 /*
 	Valores padrão das variáveis de tema. 

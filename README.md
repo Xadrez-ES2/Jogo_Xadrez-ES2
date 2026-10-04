@@ -9,11 +9,16 @@ na `app/src/engine`.
 
 ```bash
 cd app
-npm install
+npm ci
 npm run dev
 ```
 
 Abra o endereço exibido no terminal (normalmente `http://localhost:5173`).
+
+Execute os comandos npm dentro de `app`. O projeto usa Tailwind CSS 4 com
+`@tailwindcss/postcss`; o lockfile mantém a instalação reproduzível.
+Para conferir as dependências, use `npm audit`. Evite `npm audit fix --force`
+como rotina: ele pode atualizar versões principais sem adaptar a configuração.
 
 Outros comandos úteis:
 

@@ -73,6 +73,7 @@ export function Square({
             onMouseUp={(event) => { if (!disabled) onContextMouseUp?.(id, event); }}
             aria-label={accessibleLabel}
             aria-pressed={isSelected}
+            data-move-destination={isLegalMove ? "true" : undefined}
             className={`relative flex aspect-square cursor-default items-center justify-center transition-colors ${
                 isLight ? "bg-board-light" : "bg-board-dark" }`}
         >
@@ -113,7 +114,8 @@ export function Square({
             {/* Casa Vazia */}
             {isLegalMove && !piece && (
                 <span
-                    className="absolute h-1/3 w-1/3 rounded-full bg-text-muted/50"
+                    data-move-indicator="move"
+                    className="pointer-events-none absolute aspect-square w-[30%] rounded-full bg-accent/70"
                     aria-hidden="true"
                 />
             )}
@@ -121,7 +123,8 @@ export function Square({
             {/* Captura */}
             {isLegalMove && piece && (
                 <span
-                    className="absolute inset-1 rounded-sm ring-[3px] ring-inset ring-accent/70"
+                    data-move-indicator="capture"
+                    className="pointer-events-none absolute inset-1 rounded-sm border-[3px] border-solid border-accent"
                     aria-hidden="true"
                 />
             )}

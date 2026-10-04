@@ -42,7 +42,7 @@ export function BoardArrowsOverlay({ arrows, orientation }: BoardArrowsOverlayPr
     return (
         <svg
             viewBox="0 0 8 8"
-            className="pointer-events-none absolute inset-0 h-full w-full"
+            className="pointer-events-none absolute inset-0 z-20 h-full w-full"
             aria-hidden="true"
         >
             <defs>

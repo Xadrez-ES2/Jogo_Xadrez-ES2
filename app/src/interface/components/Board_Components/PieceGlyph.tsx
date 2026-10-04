@@ -70,7 +70,7 @@ export function PieceGlyph({
             alt=""
             aria-hidden="true"
             draggable={false}
-            className="pointer-events-none select-none w-12 h-12 object-contain sm:w-15 sm:h-15"
+            className="pointer-events-none select-none w-12 h-12 z-10 object-contain sm:w-15 sm:h-15"
         />
     );
 }

@@ -1,8 +1,29 @@
 import type { PlayedMove } from "../../hooks/useGameMoves";
 
 function label(move?: PlayedMove) {
-    return move ? `${move.from} ${move.capture ? "×" : "→"} ${move.to}` : "—";
+    if (!move) return "—";
+
+    if (move.piece === "pawn") {
+        return move.capture
+            ? `${move.from[0]}x${move.to}`
+            : move.to;
+    }
+
+    const symbols: Record<string, string> = {
+        knight: "N",
+        bishop: "B",
+        rook: "R",
+        queen: "Q",
+        king: "K",
+    };
+
+    const symbol = symbols[move.piece];
+
+    return move.capture
+        ? `${symbol}x${move.to}`
+        : `${symbol}${move.to}`;
 }
+
 export function MoveHistoryPanel({ moves }: { moves: PlayedMove[] }) {
     const rows = Array.from({ length: Math.ceil(moves.length / 2) }, (_, index) => ({
         number: index + 1, white: moves[index * 2], black: moves[index * 2 + 1],

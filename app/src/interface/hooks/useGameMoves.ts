@@ -24,6 +24,7 @@ export function toBoardState(game: GameState): BoardState {
 export interface PlayedMove extends Move {
     color: PieceColor;
     capture: boolean;
+    piece: PieceType;
 }
 interface State {
     game: GameState;
@@ -41,14 +42,24 @@ export function gameMovesReducer(state: State, action: Action): State {
     if (state.selected) {
         const from = toEngineSquare(state.selected);
         const move = getLegalMoves(state.game).find((candidate) => sameSquare(candidate.from, from) && sameSquare(candidate.to, to));
-        if (move) return {
-            game: applyMove(state.game, move), selected: undefined,
-            history: [...state.history, {
-                from: state.selected, to: action.square,
-                color: state.game.turn === "w" ? "white" : "black",
-                capture: getPiece(state.game.board, to) !== null,
-            }],
-        };
+        if (move) {
+            const movingPiece = getPiece(state.game.board, from);
+
+            return {
+                game: applyMove(state.game, move),
+                selected: undefined,
+                history: [
+                    ...state.history,
+                    {
+                        from: state.selected,
+                        to: action.square,
+                        color: state.game.turn === "w" ? "white" : "black",
+                        capture: getPiece(state.game.board, to) !== null,
+                        piece: pieceTypes[movingPiece!.type],
+                    },
+                ],
+            };
+        }
     }
     const piece = getPiece(state.game.board, to);
     if (piece?.color === state.game.turn) return {

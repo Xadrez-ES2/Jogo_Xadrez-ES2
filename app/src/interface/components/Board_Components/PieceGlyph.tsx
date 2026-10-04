@@ -1,16 +1,39 @@
 import type { Piece, PlayablePiece } from "../../types/pieces";
 
-/*
-    Glifos Unicode de xadrez, por cor e tipo de peça.
+import whiteKing from "../../assets/pieces/white-king.png";
+import whiteQueen from "../../assets/pieces/white-queen.png";
+import whiteRook from "../../assets/pieces/white-rook.png";
+import whiteBishop from "../../assets/pieces/white-bishop.png";
+import whiteKnight from "../../assets/pieces/white-knight.png";
+import whitePawn from "../../assets/pieces/white-pawn.png";
 
-    Outras opções para representação visual das Peças:
-    - SVG
-    - Sprites (12 imagens PNG)
-    - Biblioteca de Ícones
-*/
-const PlayablePiece_GLYPHS: Record<PlayablePiece["color"], Record<Piece["type"], string>> = {
-    white: { king: "♔", queen: "♕", rook: "♖", bishop: "♗", knight: "♘", pawn: "♙" },
-    black: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" },
+import blackKing from "../../assets/pieces/black-king.png";
+import blackQueen from "../../assets/pieces/black-queen.png";
+import blackRook from "../../assets/pieces/black-rook.png";
+import blackBishop from "../../assets/pieces/black-bishop.png";
+import blackKnight from "../../assets/pieces/black-knight.png";
+import blackPawn from "../../assets/pieces/black-pawn.png";
+
+const PLAYABLE_PIECE_IMAGES: Record<
+    PlayablePiece["color"],
+    Record<Piece["type"], string>
+> = {
+    white: {
+        king: whiteKing,
+        queen: whiteQueen,
+        rook: whiteRook,
+        bishop: whiteBishop,
+        knight: whiteKnight,
+        pawn: whitePawn,
+    },
+    black: {
+        king: blackKing,
+        queen: blackQueen,
+        rook: blackRook,
+        bishop: blackBishop,
+        knight: blackKnight,
+        pawn: blackPawn,
+    },
 };
 
 const PlayablePiece_NAMES_PT: Record<Piece["type"], string> = {
@@ -22,24 +45,32 @@ const PlayablePiece_NAMES_PT: Record<Piece["type"], string> = {
     pawn: "peão",
 };
 
-// Rótulo acessível, ex: "peça branca: rei" — usado no aria-label da casa.
-export function getPlayablePieceAccessibleLabel(PlayablePiece: PlayablePiece): string {
-    
-    const colorLabel = PlayablePiece.color === "white" ? "peça branca" : "peça preta";
-    
-    return `${colorLabel}: ${PlayablePiece_NAMES_PT[PlayablePiece.piece.type]}`;
+export function getPlayablePieceAccessibleLabel(
+    playablePiece: PlayablePiece
+): string {
+    const colorLabel =
+        playablePiece.color === "white" ? "peça branca" : "peça preta";
+
+    return `${colorLabel}: ${PlayablePiece_NAMES_PT[playablePiece.piece.type]}`;
 }
 
-export function PieceGlyph({ playablePiece }: { playablePiece: PlayablePiece }) {
+export function PieceGlyph({
+    playablePiece,
+}: {
+    playablePiece: PlayablePiece;
+}) {
+    const image =
+        PLAYABLE_PIECE_IMAGES[playablePiece.color][
+            playablePiece.piece.type
+        ];
+
     return (
-        <span
+        <img
+            src={image}
+            alt=""
             aria-hidden="true"
-            className={`pointer-events-none select-none text-[3rem] leading-none drop-shadow-sm sm:text-[2.4rem] ${
-                playablePiece.color === "white" ? "text-white" : "text-black"
-            }`}
-        >
-            {PlayablePiece_GLYPHS[playablePiece.color][playablePiece.piece.type]}
-        
-        </span>
+            draggable={false}
+            className="pointer-events-none select-none w-12 h-12 object-contain sm:w-15 sm:h-15"
+        />
     );
 }

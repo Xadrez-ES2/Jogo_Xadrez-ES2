@@ -33,6 +33,9 @@ export type GameState = {
   readonly board: Board;
   readonly turn: Color;
   readonly pendingPromotion: Square | null;
+  // Pecas capturadas na partida, na ordem em que foram capturadas.
+  // Para separar por lado, filtre pela cor da peca.
+  readonly captured: readonly Piece[];
   // Uso interno da engine, interface e IA nao devem depender disso
   readonly internal: {
     readonly castling: CastlingRights;

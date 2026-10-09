@@ -5,5 +5,6 @@ export type { Square, Color, PieceType, Piece, Board, Move, GameState } from './
 export { sameSquare, isInside, containsSquare } from './board/square';
 export { getPiece } from './board/board';
 export { createGame } from './game/createGame';
+export { getAvailablePieces } from './board/availablePieces';
 export { getLegalMoves } from './moves/legalMoves';
 export { applyMove } from './game/applyMove';

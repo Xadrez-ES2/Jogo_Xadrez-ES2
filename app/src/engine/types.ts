@@ -41,3 +41,7 @@ export type GameState = {
     readonly fullmoveNumber: number;
   };
 };
+
+// Situacao da partida para o jogador da vez.
+// 'check': o rei da vez esta atacado. 'checkmate': esta atacado e nao ha lances.
+export type GameStatus = 'playing' | 'check' | 'checkmate';

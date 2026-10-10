@@ -1,4 +1,4 @@
-import type { Board, Piece, PieceType, Square } from '../types';
+import type { Board, Color, Piece, PieceType, Square } from '../types';
 
 // Retorna a peca que esta na casa, ou null se a casa estiver vazia.
 export function getPiece(board: Board, square: Square): Piece | null {
@@ -34,4 +34,18 @@ export function createInitialBoard(): Board {
     board[7][col] = { type: BACK_ROW[col], color: 'w' };
   }
   return board;
+}
+
+// Retorna a casa do rei da cor, ou null se nao houver rei no tabuleiro
+// (pode acontecer em posicoes montadas para conferir regras).
+export function findKing(board: Board, color: Color): Square | null {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = board[row][col];
+      if (piece !== null && piece.type === 'k' && piece.color === color) {
+        return [row, col];
+      }
+    }
+  }
+  return null;
 }

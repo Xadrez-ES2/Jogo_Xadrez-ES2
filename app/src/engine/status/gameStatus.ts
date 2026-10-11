@@ -1,9 +1,12 @@
 import type { GameState, GameStatus } from '../types';
 import { getLegalMoves } from '../moves/legalMoves';
 import { isInCheck } from './attack';
+import { isFiftyMoveDraw } from './draw';
 
 // Retorna a situacao da partida para o jogador da vez.
 // Sem lances e com o rei atacado e xeque-mate: o vencedor e quem jogou por ultimo.
+// O xeque-mate vem antes do empate: se o lance que completa os 50 lances
+// der mate, vale o mate.
 // Sem lances e sem xeque (afogamento) ainda devolve 'playing':
 // o empate sera tratado na issue de empate por afogamento.
 export function getGameStatus(state: GameState): GameStatus {
@@ -12,6 +15,9 @@ export function getGameStatus(state: GameState): GameStatus {
 
   if (inCheck && !hasMoves) {
     return 'checkmate';
+  }
+  if (isFiftyMoveDraw(state)) {
+    return 'fifty-moves';
   }
   if (inCheck) {
     return 'check';

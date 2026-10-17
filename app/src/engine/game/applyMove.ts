@@ -5,6 +5,14 @@ import type { Board, Color } from '../types';
 function applyBoardMove(state: GameState, move: Move): Board {
   const piece = state.board[move.from[0]][move.from[1]];
   let board = movePiece(state.board, move);
+  if (piece?.type === 'p' && state.internal.enPassant
+    && move.to[0] === state.internal.enPassant[0] && move.to[1] === state.internal.enPassant[1]
+    && move.from[1] !== move.to[1] && state.board[move.to[0]][move.to[1]] === null) {
+    const capturedRow = move.to[0] + (piece.color === 'w' ? 1 : -1);
+    const mutable = board.map((row) => [...row]);
+    mutable[capturedRow][move.to[1]] = null;
+    board = mutable;
+  }
   if (piece?.type === 'k' && Math.abs(move.to[1] - move.from[1]) === 2) {
     const row = move.from[0];
     const rookFrom = move.to[1] > move.from[1] ? 7 : 0;
@@ -12,6 +20,12 @@ function applyBoardMove(state: GameState, move: Move): Board {
     board = movePiece(board, { from: [row, rookFrom], to: [row, rookTo] });
   }
   return board;
+}
+
+function nextEnPassantSquare(state: GameState, move: Move) {
+  const piece = state.board[move.from[0]][move.from[1]];
+  if (piece?.type !== 'p' || Math.abs(move.to[0] - move.from[0]) !== 2) return null;
+  return [(move.from[0] + move.to[0]) / 2, move.from[1]] as const;
 }
 
 function updateCastlingRights(state: GameState, move: Move) {
@@ -40,8 +54,6 @@ function updateCastlingRights(state: GameState, move: Move) {
 
 // Aplica a jogada e devolve um estado novo: peca movida, turno trocado
 // e numero do lance atualizado. O estado recebido nao e alterado.
-// Os outros campos (roque, en passant, contador dos 50 lances, promocao)
-// ainda passam sem mudanca e serao atualizados nas issues de cada um.
 export function applyMove(state: GameState, move: Move): GameState {
   const nextTurn = state.turn === 'w' ? 'b' : 'w';
 
@@ -57,6 +69,7 @@ export function applyMove(state: GameState, move: Move): GameState {
     internal: {
       ...state.internal,
       castling: updateCastlingRights(state, move),
+      enPassant: nextEnPassantSquare(state, move),
       fullmoveNumber,
     },
   };

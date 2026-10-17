@@ -1,6 +1,8 @@
 import type { Player } from "../../types/player";
 import { getInitials } from "../../utils/AuxFunctions";
 import { ChessClock } from "./ChessClock";
+import { PieceGlyph } from "./PieceGlyph";
+import type { PieceType } from "../../types/pieces";
 
  
 /*
@@ -9,7 +11,7 @@ import { ChessClock } from "./ChessClock";
     - Contém avatar, nome, cor das peças e
     espaço reservado para peças capturadas. 
 */
-export function PlayerBar({ player, remainingMs, clockActive = false }: { player?: Player; remainingMs?: number; clockActive?: boolean }) {
+export function PlayerBar({ player, remainingMs, clockActive = false, capturedPieces = [] }: { player?: Player; remainingMs?: number; clockActive?: boolean; capturedPieces?: PieceType[] }) {
     
     if (!player) {
         return (
@@ -52,9 +54,15 @@ export function PlayerBar({ player, remainingMs, clockActive = false }: { player
                     
                     </p>
                 
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-text-muted">
-                        ♟♟♟ ♟️♟️♟️
-                    </span>
+                    <div className="flex min-h-4 items-center gap-0.5" role="group" aria-label="Peças capturadas">
+                        {capturedPieces.map((type, index) => (
+                            <PieceGlyph
+                                key={`${type}-${index}`}
+                                playablePiece={{ piece: { type }, color: player.color === "white" ? "black" : "white" }}
+                                className="h-4 w-4 object-contain opacity-70"
+                            />
+                        ))}
+                    </div>
                 
                 </div>
             

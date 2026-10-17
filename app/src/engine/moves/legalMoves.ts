@@ -88,6 +88,7 @@ export function getLegalMoves(state: GameState): Move[] {
   if (state.pendingPromotion) return [];
   const color = state.turn;
   return [...pseudoLegalMoves(state.board, color), ...castlingMoves(state), ...enPassantMoves(state)].filter(
-    (move) => !isInCheck(boardAfterMove(state, move), color),
+    (move) => state.board[move.to[0]][move.to[1]]?.type !== 'k'
+      && !isInCheck(boardAfterMove(state, move), color),
   );
 }

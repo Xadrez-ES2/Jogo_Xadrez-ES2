@@ -1,4 +1,4 @@
-import type { Board, GameState, Piece } from '../engine';
+import type { GameState, Piece } from '../engine';
 import { getPiece } from '../engine';
 import { PIECE_VALUES, CENTER_BONUS, PAWN_ADVANCE_BONUS } from './criteria';
 
@@ -32,18 +32,4 @@ export function evaluate(state: GameState): number {
     }
   }
   return total;
-}
-
-// Enquanto a engine nao filtra xeque (#27), um rei pode ser capturado na busca.
-// Quando isso acontece a partida acabou e a busca para nesse ramo.
-export function isKingMissing(board: Board): boolean {
-  let kings = 0;
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      if (getPiece(board, [row, col])?.type === 'k') {
-        kings++;
-      }
-    }
-  }
-  return kings < 2;
 }

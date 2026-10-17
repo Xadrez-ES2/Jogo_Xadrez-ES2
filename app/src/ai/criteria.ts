@@ -9,8 +9,8 @@ export const PIECE_VALUES: Record<PieceType, number> = {
   n: 320,
   b: 330,
   r: 500,
-  q: 900,
-  k: 20000, //ainda não tem xeque disponível ainda na máquina de regras (engine)
+  q: 800,
+  k: 20000, // Xeque-mate e tratado separadamente na busca.
 };
 
 // Controle do centro: bonus por casa ocupada (vale para peao, cavalo e bispo).

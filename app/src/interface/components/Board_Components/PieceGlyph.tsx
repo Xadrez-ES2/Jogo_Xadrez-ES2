@@ -56,8 +56,10 @@ export function getPlayablePieceAccessibleLabel(
 
 export function PieceGlyph({
     playablePiece,
+    className,
 }: {
     playablePiece: PlayablePiece;
+    className?: string;
 }) {
     const image =
         PLAYABLE_PIECE_IMAGES[playablePiece.color][
@@ -70,7 +72,7 @@ export function PieceGlyph({
             alt=""
             aria-hidden="true"
             draggable={false}
-            className="pointer-events-none select-none w-12 h-12 z-10 object-contain sm:w-15 sm:h-15"
+            className={className ?? "pointer-events-none select-none w-12 h-12 z-10 object-contain sm:w-15 sm:h-15"}
         />
     );
 }

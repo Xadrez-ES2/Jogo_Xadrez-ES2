@@ -1,5 +1,5 @@
 import type { BoardArrow } from "../../hooks/useBoardArrows";
-import type { PieceColor, PlayablePiece } from "../../types/pieces";
+import type { PieceColor, PieceType, PlayablePiece } from "../../types/pieces";
 import type { Player } from "../../types/player";
 import { type BoardState, type Files, type Move, type Ranks, type SquareId } from "../../types/square";
 import { BoardArrowsOverlay } from "./BoardArrowOverlay";
@@ -20,6 +20,8 @@ interface BoardProps {
 
     // Jogador exibido abaixo do tabuleiro (o usuário).
     bottomPlayer?: Player;
+    topCapturedPieces?: PieceType[];
+    bottomCapturedPieces?: PieceType[];
 
     // Posição atual: mapa esparso de casa -> peça. Sem isso, o tabuleiro renderiza vazio.
     pieces?: BoardState;
@@ -65,6 +67,8 @@ export function Board({
     activeClock,
     topPlayer,
     bottomPlayer,
+    topCapturedPieces = [],
+    bottomCapturedPieces = [],
     pieces,
     selectedSquare,
     legalMoves,
@@ -95,7 +99,7 @@ export function Board({
             
             <div className="w-full max-w-[560px]">
                 
-                <PlayerBar player={topPlayer} remainingMs={topPlayer ? clockTimes?.[topPlayer.color] : undefined} clockActive={topPlayer?.color === activeClock} />
+                <PlayerBar player={topPlayer} capturedPieces={topCapturedPieces} remainingMs={topPlayer ? clockTimes?.[topPlayer.color] : undefined} clockActive={topPlayer?.color === activeClock} />
             
             </div>
     
@@ -184,7 +188,7 @@ export function Board({
     
             <div className="w-full max-w-[560px]">
                 
-                <PlayerBar player={bottomPlayer} remainingMs={bottomPlayer ? clockTimes?.[bottomPlayer.color] : undefined} clockActive={bottomPlayer?.color === activeClock} />
+                <PlayerBar player={bottomPlayer} capturedPieces={bottomCapturedPieces} remainingMs={bottomPlayer ? clockTimes?.[bottomPlayer.color] : undefined} clockActive={bottomPlayer?.color === activeClock} />
             
             </div>
         

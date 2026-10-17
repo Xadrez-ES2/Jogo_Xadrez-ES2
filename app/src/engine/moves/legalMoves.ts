@@ -45,9 +45,35 @@ function castlingMoves(state: GameState): Move[] {
   return moves;
 }
 
-function boardAfterMove(board: Board, move: Move): Board {
+function enPassantMoves(state: GameState): Move[] {
+  const target = state.internal.enPassant;
+  if (!target) return [];
+  const { board, turn: color } = state;
+  const dir = color === 'w' ? -1 : 1;
+  const fromRow = target[0] - dir;
+  const moves: Move[] = [];
+  for (const fromCol of [target[1] - 1, target[1] + 1]) {
+    if (fromRow < 0 || fromRow > 7 || fromCol < 0 || fromCol > 7) continue;
+    const pawn = board[fromRow][fromCol];
+    const captured = board[fromRow][target[1]];
+    if (pawn?.type === 'p' && pawn.color === color && captured?.type === 'p' && captured.color !== color) {
+      moves.push({ from: [fromRow, fromCol], to: target });
+    }
+  }
+  return moves;
+}
+
+function boardAfterMove(state: GameState, move: Move): Board {
+  const { board, internal: { enPassant } } = state;
   const piece = board[move.from[0]][move.from[1]];
   let result = movePiece(board, move);
+  if (piece?.type === 'p' && enPassant && move.to[0] === enPassant[0] && move.to[1] === enPassant[1]
+    && move.from[1] !== move.to[1] && board[move.to[0]][move.to[1]] === null) {
+    const capturedRow = move.to[0] + (piece.color === 'w' ? 1 : -1);
+    const mutable = result.map((row) => [...row]);
+    mutable[capturedRow][move.to[1]] = null;
+    result = mutable;
+  }
   if (piece?.type === 'k' && Math.abs(move.to[1] - move.from[1]) === 2) {
     const rookFrom = move.to[1] > move.from[1] ? 7 : 0;
     const rookTo = move.to[1] > move.from[1] ? 5 : 3;
@@ -60,7 +86,7 @@ function boardAfterMove(board: Board, move: Move): Board {
 // que, depois de simulados, nao deixam o proprio rei atacado.
 export function getLegalMoves(state: GameState): Move[] {
   const color = state.turn;
-  return [...pseudoLegalMoves(state.board, color), ...castlingMoves(state)].filter(
-    (move) => !isInCheck(boardAfterMove(state.board, move), color),
+  return [...pseudoLegalMoves(state.board, color), ...castlingMoves(state), ...enPassantMoves(state)].filter(
+    (move) => !isInCheck(boardAfterMove(state, move), color),
   );
 }

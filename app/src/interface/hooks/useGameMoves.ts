@@ -25,6 +25,7 @@ export interface PlayedMove extends Move {
     color: PieceColor;
     capture: boolean;
     piece: PieceType;
+    capturedPiece?: PieceType;
     castle?: "kingSide" | "queenSide";
 }
 interface State {
@@ -45,6 +46,12 @@ export function gameMovesReducer(state: State, action: Action): State {
         const move = getLegalMoves(state.game).find((candidate) => sameSquare(candidate.from, from) && sameSquare(candidate.to, to));
         if (move) {
             const movingPiece = getPiece(state.game.board, from);
+            const capturedPiece = getPiece(state.game.board, to)
+                ?? (movingPiece?.type === "p" && from[1] !== to[1]
+                    && state.game.internal.enPassant !== null
+                    && sameSquare(state.game.internal.enPassant, to)
+                    ? { type: "p" as const, color: state.game.turn === "w" ? "b" as const : "w" as const }
+                    : null);
 
             return {
                 game: applyMove(state.game, move),
@@ -55,8 +62,12 @@ export function gameMovesReducer(state: State, action: Action): State {
                         from: state.selected,
                         to: action.square,
                         color: state.game.turn === "w" ? "white" : "black",
-                        capture: getPiece(state.game.board, to) !== null,
+                        capture: getPiece(state.game.board, to) !== null
+                            || (movingPiece!.type === "p" && from[1] !== to[1]
+                                && state.game.internal.enPassant !== null
+                                && sameSquare(state.game.internal.enPassant, to)),
                         piece: pieceTypes[movingPiece!.type],
+                        capturedPiece: capturedPiece ? pieceTypes[capturedPiece.type] : undefined,
                         castle: movingPiece!.type === "k" && Math.abs(to[1] - from[1]) === 2
                             ? (to[1] > from[1] ? "kingSide" : "queenSide")
                             : undefined,

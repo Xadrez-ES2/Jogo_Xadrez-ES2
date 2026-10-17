@@ -10,3 +10,4 @@ export { getLegalMoves } from './moves/legalMoves';
 export { applyMove } from './game/applyMove';
 export { promotePawn } from './game/applyMove';
 export { getGameStatus } from './status/gameStatus';
+export { isFiftyMoveDraw } from './status/draw';

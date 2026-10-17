@@ -2,11 +2,15 @@ import type { PlayedMove } from "../../hooks/useGameMoves";
 
 function label(move?: PlayedMove) {
     if (!move) return "—";
+    if (move.castle === "kingSide") return "O-O";
+    if (move.castle === "queenSide") return "O-O-O";
+
+    const promotionSymbol = move.promotion ? `=${move.promotion.toUpperCase()}` : "";
 
     if (move.piece === "pawn") {
-        return move.capture
+        return (move.capture
             ? `${move.from[0]}x${move.to}`
-            : move.to;
+            : move.to) + promotionSymbol;
     }
 
     const symbols: Record<string, string> = {
@@ -19,9 +23,9 @@ function label(move?: PlayedMove) {
 
     const symbol = symbols[move.piece];
 
-    return move.capture
+    return (move.capture
         ? `${symbol}x${move.to}`
-        : `${symbol}${move.to}`;
+        : `${symbol}${move.to}`) + promotionSymbol;
 }
 
 export function MoveHistoryPanel({ moves }: { moves: PlayedMove[] }) {

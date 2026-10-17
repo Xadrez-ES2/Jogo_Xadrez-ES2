@@ -29,10 +29,13 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	const { user } = useAuth();
 	const player = user ? { ...currentUser, id: user.uid, name: user.displayName, avatarUrl: user.photoURL ?? "" } : currentUser;
 	
-	const { pieces, legalMoves, lastMove, history, activeColor, selectedSquare, handleSquareSelect, clearSelection } = useGameMoves();
+	const { pieces, legalMoves, lastMove, history, activeColor, selectedSquare, pendingPromotion, choosePromotion, handleSquareSelect, clearSelection } = useGameMoves();
 	const localGame = setup.mode === "human-human";
 	const canPlay = localGame || (setup.mode === "human-ai" && activeColor === currentUser.color);
 	const opponent = localGame ? { ...botOpponent, id: "local-black", name: "Pessoa 2 (pretas)", isBot: false, rating: undefined } : setup.mode === "ai-ai" ? { ...botOpponent, name: "IA (pretas)" } : botOpponent;
+	const topCapturedPieces = history.filter((move) => move.color === opponent.color && move.capturedPiece).map((move) => move.capturedPiece!);
+	const bottomColor = setup.mode === "ai-ai" ? "white" : player.color;
+	const bottomCapturedPieces = history.filter((move) => move.color === bottomColor && move.capturedPiece).map((move) => move.capturedPiece!);
 	const [confirmResignation, setConfirmResignation] = useState(false);
 	const [result, setResult] = useState<GameResult | null>(null);
 	const [showResult, setShowResult] = useState(false);
@@ -103,10 +106,14 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 				<Board 
 					topPlayer={opponent}
 					bottomPlayer={setup.mode === "ai-ai" ? { ...botOpponent, id: "white-ai", name: "IA (brancas)", color: "white" } : player}
+					topCapturedPieces={topCapturedPieces}
+					bottomCapturedPieces={bottomCapturedPieces}
+					promotionSquare={pendingPromotion}
+					onPromotionSelect={choosePromotion}
 					pieces={pieces}
 					legalMoves={legalMoves}
 					lastMove={lastMove}
-					disabled={result !== null || isPaused || !canPlay}
+					disabled={result !== null || isPaused || !canPlay || pendingPromotion !== undefined}
 					clockTimes={clockTimes}
 					activeClock={running ? activeColor : undefined}
 					selectedSquare={selectedSquare}

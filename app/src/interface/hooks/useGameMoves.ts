@@ -1,6 +1,6 @@
 import { useMemo, useReducer } from "react";
-import { applyMove, createGame, getLegalMoves, getPiece, sameSquare } from "../../engine";
-import type { GameState, Square } from "../../engine";
+import { applyMove, createGame, getLegalMoves, getPiece, promotePawn, sameSquare } from "../../engine";
+import type { GameState, PromotionPieceType, Square } from "../../engine";
 import type { PieceColor, PieceType } from "../types/pieces";
 import type { BoardState, Move, SquareId } from "../types/square";
 
@@ -25,25 +25,44 @@ export interface PlayedMove extends Move {
     color: PieceColor;
     capture: boolean;
     piece: PieceType;
+    capturedPiece?: PieceType;
+    promotion?: PromotionPieceType;
+    castle?: "kingSide" | "queenSide";
 }
 interface State {
     game: GameState;
     selected?: SquareId;
     history: PlayedMove[];
 }
-type Action = { type: "select"; square: SquareId } | { type: "clear" } | { type: "reset" };
+type Action = { type: "select"; square: SquareId } | { type: "clear" } | { type: "reset" } | { type: "promote"; piece: PromotionPieceType };
 export function createMoveState(): State {
     return { game: createGame(), history: [] };
 }
 export function gameMovesReducer(state: State, action: Action): State {
     if (action.type === "reset") return createMoveState();
     if (action.type === "clear") return { ...state, selected: undefined };
+    if (action.type === "promote") {
+        if (!state.game.pendingPromotion) return state;
+        return {
+            ...state,
+            game: promotePawn(state.game, action.piece),
+            history: state.history.map((move, index) => index === state.history.length - 1
+                ? { ...move, promotion: action.piece }
+                : move),
+        };
+    }
     const to = toEngineSquare(action.square);
     if (state.selected) {
         const from = toEngineSquare(state.selected);
         const move = getLegalMoves(state.game).find((candidate) => sameSquare(candidate.from, from) && sameSquare(candidate.to, to));
         if (move) {
             const movingPiece = getPiece(state.game.board, from);
+            const capturedPiece = getPiece(state.game.board, to)
+                ?? (movingPiece?.type === "p" && from[1] !== to[1]
+                    && state.game.internal.enPassant !== null
+                    && sameSquare(state.game.internal.enPassant, to)
+                    ? { type: "p" as const, color: state.game.turn === "w" ? "b" as const : "w" as const }
+                    : null);
 
             return {
                 game: applyMove(state.game, move),
@@ -54,8 +73,15 @@ export function gameMovesReducer(state: State, action: Action): State {
                         from: state.selected,
                         to: action.square,
                         color: state.game.turn === "w" ? "white" : "black",
-                        capture: getPiece(state.game.board, to) !== null,
+                        capture: getPiece(state.game.board, to) !== null
+                            || (movingPiece!.type === "p" && from[1] !== to[1]
+                                && state.game.internal.enPassant !== null
+                                && sameSquare(state.game.internal.enPassant, to)),
                         piece: pieceTypes[movingPiece!.type],
+                        capturedPiece: capturedPiece ? pieceTypes[capturedPiece.type] : undefined,
+                        castle: movingPiece!.type === "k" && Math.abs(to[1] - from[1]) === 2
+                            ? (to[1] > from[1] ? "kingSide" : "queenSide")
+                            : undefined,
                     },
                 ],
             };
@@ -76,8 +102,10 @@ export function useGameMoves() {
     const clearSelection = useMemo(() => () => dispatch({ type: "clear" }), []);
     return {
         pieces, legalMoves, selectedSquare: state.selected, history: state.history,
+        pendingPromotion: state.game.pendingPromotion ? toSquareId(state.game.pendingPromotion) : undefined,
         lastMove: state.history.at(-1), activeColor: (state.game.turn === "w" ? "white" : "black") as PieceColor,
         handleSquareSelect: (square: SquareId) => dispatch({ type: "select", square }),
+        choosePromotion: (piece: PromotionPieceType) => dispatch({ type: "promote", piece }),
         clearSelection, resetMoves: () => dispatch({ type: "reset" }),
     };
 }

@@ -25,6 +25,7 @@ export interface PlayedMove extends Move {
     color: PieceColor;
     capture: boolean;
     piece: PieceType;
+    castle?: "kingSide" | "queenSide";
 }
 interface State {
     game: GameState;
@@ -56,6 +57,9 @@ export function gameMovesReducer(state: State, action: Action): State {
                         color: state.game.turn === "w" ? "white" : "black",
                         capture: getPiece(state.game.board, to) !== null,
                         piece: pieceTypes[movingPiece!.type],
+                        castle: movingPiece!.type === "k" && Math.abs(to[1] - from[1]) === 2
+                            ? (to[1] > from[1] ? "kingSide" : "queenSide")
+                            : undefined,
                     },
                 ],
             };

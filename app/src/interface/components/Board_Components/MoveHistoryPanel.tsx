@@ -2,6 +2,8 @@ import type { PlayedMove } from "../../hooks/useGameMoves";
 
 function label(move?: PlayedMove) {
     if (!move) return "—";
+    if (move.castle === "kingSide") return "O-O";
+    if (move.castle === "queenSide") return "O-O-O";
 
     if (move.piece === "pawn") {
         return move.capture

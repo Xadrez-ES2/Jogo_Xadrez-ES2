@@ -85,6 +85,7 @@ function boardAfterMove(state: GameState, move: Move): Board {
 // Retorna as jogadas legais do jogador da vez: os lances pseudo-legais
 // que, depois de simulados, nao deixam o proprio rei atacado.
 export function getLegalMoves(state: GameState): Move[] {
+  if (state.pendingPromotion) return [];
   const color = state.turn;
   return [...pseudoLegalMoves(state.board, color), ...castlingMoves(state), ...enPassantMoves(state)].filter(
     (move) => !isInCheck(boardAfterMove(state, move), color),

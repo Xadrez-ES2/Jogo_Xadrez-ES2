@@ -29,7 +29,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	const { user } = useAuth();
 	const player = user ? { ...currentUser, id: user.uid, name: user.displayName, avatarUrl: user.photoURL ?? "" } : currentUser;
 	
-	const { pieces, legalMoves, lastMove, history, activeColor, selectedSquare, handleSquareSelect, clearSelection } = useGameMoves();
+	const { pieces, legalMoves, lastMove, history, activeColor, selectedSquare, pendingPromotion, choosePromotion, handleSquareSelect, clearSelection } = useGameMoves();
 	const localGame = setup.mode === "human-human";
 	const canPlay = localGame || (setup.mode === "human-ai" && activeColor === currentUser.color);
 	const opponent = localGame ? { ...botOpponent, id: "local-black", name: "Pessoa 2 (pretas)", isBot: false, rating: undefined } : setup.mode === "ai-ai" ? { ...botOpponent, name: "IA (pretas)" } : botOpponent;
@@ -108,10 +108,12 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 					bottomPlayer={setup.mode === "ai-ai" ? { ...botOpponent, id: "white-ai", name: "IA (brancas)", color: "white" } : player}
 					topCapturedPieces={topCapturedPieces}
 					bottomCapturedPieces={bottomCapturedPieces}
+					promotionSquare={pendingPromotion}
+					onPromotionSelect={choosePromotion}
 					pieces={pieces}
 					legalMoves={legalMoves}
 					lastMove={lastMove}
-					disabled={result !== null || isPaused || !canPlay}
+					disabled={result !== null || isPaused || !canPlay || pendingPromotion !== undefined}
 					clockTimes={clockTimes}
 					activeClock={running ? activeColor : undefined}
 					selectedSquare={selectedSquare}

@@ -7,6 +7,7 @@ export type Color = 'w' | 'b';
 
 // p = peao, n = cavalo, b = bispo, r = torre, q = dama, k = rei
 export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
+export type PromotionPieceType = Exclude<PieceType, 'p' | 'k'>;
 
 export type Piece = {
   readonly type: PieceType;

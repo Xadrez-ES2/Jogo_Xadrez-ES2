@@ -1,8 +1,10 @@
 import type { BoardArrow } from "../../hooks/useBoardArrows";
 import type { PieceColor, PieceType, PlayablePiece } from "../../types/pieces";
+import type { PromotionPieceType } from "../../../engine";
 import type { Player } from "../../types/player";
 import { type BoardState, type Files, type Move, type Ranks, type SquareId } from "../../types/square";
 import { BoardArrowsOverlay } from "./BoardArrowOverlay";
+import { PieceGlyph } from "./PieceGlyph";
 import { PlayerBar } from "./PlayerBar";
 import { Square } from "./Square";
 import type { ClockTimes } from "../../hooks/useChessClock";
@@ -22,6 +24,8 @@ interface BoardProps {
     bottomPlayer?: Player;
     topCapturedPieces?: PieceType[];
     bottomCapturedPieces?: PieceType[];
+    promotionSquare?: SquareId;
+    onPromotionSelect?: (piece: PromotionPieceType) => void;
 
     // Posição atual: mapa esparso de casa -> peça. Sem isso, o tabuleiro renderiza vazio.
     pieces?: BoardState;
@@ -69,6 +73,8 @@ export function Board({
     bottomPlayer,
     topCapturedPieces = [],
     bottomCapturedPieces = [],
+    promotionSquare,
+    onPromotionSelect,
     pieces,
     selectedSquare,
     legalMoves,
@@ -122,8 +128,8 @@ export function Board({
         
                     {/* Wrapper relativo: o overlay de setas precisa se posicionar
                         exatamente por cima do grid, casa por casa. */}
-                    <div className="relative flex-1 overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
-                        
+                    <div className="relative flex-1">
+                        <div className="relative overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
                         <div className="grid grid-cols-8 grid-rows-8">
                             
                             {displayRanks.flatMap((rank) =>
@@ -159,7 +165,44 @@ export function Board({
                         </div>
             
                         <BoardArrowsOverlay arrows={arrows} orientation={orientation} />
-                    
+                        </div>
+                        {promotionSquare && onPromotionSelect && (() => {
+                            const row = 8 - Number(promotionSquare[1]);
+                            const col = BASE_FILES.indexOf(promotionSquare[0] as Files);
+                            const color = pieces?.[promotionSquare]?.color ?? (row === 0 ? "white" : "black");
+                            const options: PromotionPieceType[] = ["q", "r", "b", "n"];
+                            return (
+                                <div
+                                    role="group"
+                                    aria-label="Escolha a peça para promoção"
+                                    className={`pointer-events-auto absolute z-30 flex h-1/2 w-[12.5%] overflow-hidden rounded-md border border-border bg-surface shadow-xl ${row === 7 ? "flex-col-reverse" : "flex-col"}`}
+                                    style={{
+                                        left: `${(col >= 6 ? col - 1 : col + 1) * 12.5}%`,
+                                        top: `${row === 7 ? 50 : 0}%`,
+                                    }}
+                                >
+                                    {options.map((piece) => {
+                                        const pieceName = { q: "dama", r: "torre", b: "bispo", n: "cavalo" }[piece];
+                                        const pieceType = { q: "queen", r: "rook", b: "bishop", n: "knight" }[piece] as PieceType;
+                                        return (
+                                            <button
+                                                key={piece}
+                                                type="button"
+                                                onClick={() => onPromotionSelect(piece)}
+                                                aria-label={`Promover para ${pieceName}`}
+                                                title={`Promover para ${pieceName}`}
+                                                className="flex h-1/4 w-full items-center justify-center bg-surface hover:bg-accent/30 focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                                            >
+                                                <PieceGlyph
+                                                    playablePiece={{ piece: { type: pieceType }, color }}
+                                                    className="h-full w-full object-contain"
+                                                />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
                     </div>
                 
                 </div>

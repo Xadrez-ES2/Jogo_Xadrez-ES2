@@ -55,10 +55,12 @@ function updateCastlingRights(state: GameState, move: Move) {
 // Aplica a jogada e devolve um estado novo: peca movida, turno trocado
 // e numero do lance atualizado. O estado recebido nao e alterado.
 export function applyMove(state: GameState, move: Move): GameState {
-  const nextTurn = state.turn === 'w' ? 'b' : 'w';
+  const movingPiece = state.board[move.from[0]][move.from[1]];
+  const isPromotion = movingPiece?.type === 'p' && (move.to[0] === 0 || move.to[0] === 7);
+  const nextTurn = isPromotion ? state.turn : state.turn === 'w' ? 'b' : 'w';
 
   // O numero do lance aumenta depois que as pretas jogam
-  const fullmoveNumber = state.turn === 'b'
+  const fullmoveNumber = !isPromotion && state.turn === 'b'
     ? state.internal.fullmoveNumber + 1
     : state.internal.fullmoveNumber;
 
@@ -66,11 +68,31 @@ export function applyMove(state: GameState, move: Move): GameState {
     ...state,
     board: applyBoardMove(state, move),
     turn: nextTurn,
+    pendingPromotion: isPromotion ? move.to : null,
     internal: {
       ...state.internal,
       castling: updateCastlingRights(state, move),
       enPassant: nextEnPassantSquare(state, move),
       fullmoveNumber,
+    },
+  };
+}
+
+export function promotePawn(state: GameState, type: import('../types').PromotionPieceType): GameState {
+  const square = state.pendingPromotion;
+  if (!square) return state;
+  const pawn = state.board[square[0]][square[1]];
+  if (pawn?.type !== 'p' || pawn.color !== state.turn) return state;
+  const board = state.board.map((row) => [...row]);
+  board[square[0]][square[1]] = { type, color: pawn.color };
+  return {
+    ...state,
+    board,
+    turn: state.turn === 'w' ? 'b' : 'w',
+    pendingPromotion: null,
+    internal: {
+      ...state.internal,
+      fullmoveNumber: state.turn === 'b' ? state.internal.fullmoveNumber + 1 : state.internal.fullmoveNumber,
     },
   };
 }

@@ -44,6 +44,6 @@ export type GameState = {
 };
 
 // Situacao da partida para o jogador da vez.
-// 'check': o rei da vez esta atacado. 'checkmate': esta atacado e nao ha lances.
+// 'checkmate': rei atacado sem lances; 'stalemate': sem lances e sem xeque.
 // 'fifty-moves': empate pela regra dos 50 lances.
-export type GameStatus = 'playing' | 'check' | 'checkmate' | 'fifty-moves';
+export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate' | 'fifty-moves';

@@ -1,6 +1,6 @@
-import { useMemo, useReducer } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import { applyMove, createGame, getLegalMoves, getPiece, promotePawn, sameSquare } from "../../engine";
-import type { GameState, PromotionPieceType, Square } from "../../engine";
+import type { GameState, Move as EngineMove, PromotionPieceType, Square } from "../../engine";
 import type { PieceColor, PieceType } from "../types/pieces";
 import type { BoardState, Move, SquareId } from "../types/square";
 
@@ -34,13 +34,48 @@ interface State {
     selected?: SquareId;
     history: PlayedMove[];
 }
-type Action = { type: "select"; square: SquareId } | { type: "clear" } | { type: "reset" } | { type: "promote"; piece: PromotionPieceType };
+type Action = { type: "select"; square: SquareId } | { type: "clear" } | { type: "reset" } | { type: "promote"; piece: PromotionPieceType } | { type: "play"; move: EngineMove; promotion?: PromotionPieceType };
 export function createMoveState(): State {
     return { game: createGame(), history: [] };
 }
+
+function applyPlayedMove(state: State, move: EngineMove, promotion?: PromotionPieceType): State {
+    const from = move.from;
+    const to = move.to;
+    const fromId = toSquareId(from);
+    const toId = toSquareId(to);
+    const movingPiece = getPiece(state.game.board, from);
+    const capturedPiece = getPiece(state.game.board, to)
+        ?? (movingPiece?.type === "p" && from[1] !== to[1]
+            && state.game.internal.enPassant !== null
+            && sameSquare(state.game.internal.enPassant, to)
+            ? { type: "p" as const, color: state.game.turn === "w" ? "b" as const : "w" as const }
+            : null);
+    let game = applyMove(state.game, move);
+    if (promotion) game = promotePawn(game, promotion);
+
+    return {
+        game,
+        selected: undefined,
+        history: [...state.history, {
+            from: fromId,
+            to: toId,
+            color: state.game.turn === "w" ? "white" : "black",
+            capture: capturedPiece !== null,
+            piece: pieceTypes[movingPiece!.type],
+            capturedPiece: capturedPiece ? pieceTypes[capturedPiece.type] : undefined,
+            promotion,
+            castle: movingPiece!.type === "k" && Math.abs(to[1] - from[1]) === 2
+                ? (to[1] > from[1] ? "kingSide" : "queenSide")
+                : undefined,
+        }],
+    };
+}
+
 export function gameMovesReducer(state: State, action: Action): State {
     if (action.type === "reset") return createMoveState();
     if (action.type === "clear") return { ...state, selected: undefined };
+    if (action.type === "play") return applyPlayedMove(state, action.move, action.promotion);
     if (action.type === "promote") {
         if (!state.game.pendingPromotion) return state;
         return {
@@ -56,35 +91,7 @@ export function gameMovesReducer(state: State, action: Action): State {
         const from = toEngineSquare(state.selected);
         const move = getLegalMoves(state.game).find((candidate) => sameSquare(candidate.from, from) && sameSquare(candidate.to, to));
         if (move) {
-            const movingPiece = getPiece(state.game.board, from);
-            const capturedPiece = getPiece(state.game.board, to)
-                ?? (movingPiece?.type === "p" && from[1] !== to[1]
-                    && state.game.internal.enPassant !== null
-                    && sameSquare(state.game.internal.enPassant, to)
-                    ? { type: "p" as const, color: state.game.turn === "w" ? "b" as const : "w" as const }
-                    : null);
-
-            return {
-                game: applyMove(state.game, move),
-                selected: undefined,
-                history: [
-                    ...state.history,
-                    {
-                        from: state.selected,
-                        to: action.square,
-                        color: state.game.turn === "w" ? "white" : "black",
-                        capture: getPiece(state.game.board, to) !== null
-                            || (movingPiece!.type === "p" && from[1] !== to[1]
-                                && state.game.internal.enPassant !== null
-                                && sameSquare(state.game.internal.enPassant, to)),
-                        piece: pieceTypes[movingPiece!.type],
-                        capturedPiece: capturedPiece ? pieceTypes[capturedPiece.type] : undefined,
-                        castle: movingPiece!.type === "k" && Math.abs(to[1] - from[1]) === 2
-                            ? (to[1] > from[1] ? "kingSide" : "queenSide")
-                            : undefined,
-                    },
-                ],
-            };
+            return applyPlayedMove(state, move);
         }
     }
     const piece = getPiece(state.game.board, to);
@@ -100,12 +107,15 @@ export function useGameMoves() {
         ? getLegalMoves(state.game).filter((move) => sameSquare(move.from, toEngineSquare(state.selected!))).map((move) => toSquareId(move.to))
         : [], [state.game, state.selected]);
     const clearSelection = useMemo(() => () => dispatch({ type: "clear" }), []);
+    const playAIMove = useCallback((move: EngineMove, promotion?: PromotionPieceType) => {
+        dispatch({ type: "play", move, promotion });
+    }, []);
     return {
-        pieces, legalMoves, selectedSquare: state.selected, history: state.history,
+        game: state.game, pieces, legalMoves, selectedSquare: state.selected, history: state.history,
         pendingPromotion: state.game.pendingPromotion ? toSquareId(state.game.pendingPromotion) : undefined,
         lastMove: state.history.at(-1), activeColor: (state.game.turn === "w" ? "white" : "black") as PieceColor,
         handleSquareSelect: (square: SquareId) => dispatch({ type: "select", square }),
         choosePromotion: (piece: PromotionPieceType) => dispatch({ type: "promote", piece }),
-        clearSelection, resetMoves: () => dispatch({ type: "reset" }),
+        clearSelection, playAIMove, resetMoves: () => dispatch({ type: "reset" }),
     };
 }

@@ -9,7 +9,7 @@ export function StatusPanel({ activeColor, mode }: { activeColor: PieceColor; mo
                 Vez das <span className="font-semibold text-accent">{activeColor === "white" ? "brancas" : "pretas"}</span>.
             </p>
             <p className="mt-3 text-sm text-text-muted">
-                {mode === "human-human" ? "Partida local: as duas pessoas jogam neste dispositivo." : mode === "ai-ai" || activeColor === "black" ? "Aguardando a IA. A resposta automática ainda não está disponível." : "Selecione uma peça branca e depois um destino destacado."}
+                {mode === "human-human" ? "Partida local: as duas pessoas jogam neste dispositivo." : mode === "ai-ai" ? "As IAs estão jogando." : activeColor === "black" ? "A IA está pensando." : "Selecione uma peça branca e depois um destino destacado."}
             </p>
         </section>
     );

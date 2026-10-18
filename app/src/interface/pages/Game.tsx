@@ -1,4 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { chooseMove, type Difficulty } from "../../ai";
+import { getGameStatus } from "../../engine";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { GameResultModal } from "../components/GameResultModal";
@@ -19,6 +21,12 @@ import { GameSetupForm } from "../components/GameSetupForm";
 import { gameModeLabels, type GameSetup } from "../types/gameSetup";
 import { difficultyLabels } from "../types/matchHistory";
 
+const AI_RESPONSE_DELAY_MS: Record<Difficulty, number> = {
+	easy: 1_500,
+	medium: 2_500,
+	hard: 3_500,
+};
+
 
 export function Game() {
     const [setup, setSetup] = useState<GameSetup | null>(null);
@@ -29,9 +37,11 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	const { user } = useAuth();
 	const player = user ? { ...currentUser, id: user.uid, name: user.displayName, avatarUrl: user.photoURL ?? "" } : currentUser;
 	
-	const { pieces, legalMoves, lastMove, history, activeColor, selectedSquare, pendingPromotion, choosePromotion, handleSquareSelect, clearSelection } = useGameMoves();
+	const { game, pieces, legalMoves, lastMove, history, activeColor, selectedSquare, pendingPromotion, choosePromotion, handleSquareSelect, clearSelection, playAIMove } = useGameMoves();
+	const gameStatus = useMemo(() => getGameStatus(game), [game]);
 	const localGame = setup.mode === "human-human";
 	const canPlay = localGame || (setup.mode === "human-ai" && activeColor === currentUser.color);
+	const aiTurn = setup.mode === "ai-ai" || (setup.mode === "human-ai" && activeColor !== currentUser.color);
 	const opponent = localGame ? { ...botOpponent, id: "local-black", name: "Pessoa 2 (pretas)", isBot: false, rating: undefined } : setup.mode === "ai-ai" ? { ...botOpponent, name: "IA (pretas)" } : botOpponent;
 	const topCapturedPieces = history.filter((move) => move.color === opponent.color && move.capturedPiece).map((move) => move.capturedPiece!);
 	const bottomColor = setup.mode === "ai-ai" ? "white" : player.color;
@@ -56,7 +66,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	} = useBoardArrows();
 
 
-	const running = canPlay && !isPaused && result === null;
+	const running = (canPlay || aiTurn) && !isPaused && result === null;
 	const finishGame = useCallback((nextResult: GameResult, reasonCode: EndReason) => {
 		if (finished.current) return;
 		finished.current = true;
@@ -71,12 +81,47 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 			reasonCode, difficulty: setup.difficulty, opponent: botOpponent.name,
 		});
 	}, [clearSelection, clearAnnotations, user, gameId, setup]);
+	useEffect(() => {
+		if (gameStatus === "checkmate") {
+			const winner = activeColor === "white" ? "black" : "white";
+			finishGame({
+				outcome: winner === currentUser.color ? "victory" : "defeat",
+				reason: `Xeque-mate. Vitória das ${winner === "white" ? "brancas" : "pretas"}.`,
+			}, "checkmate");
+		} else if (gameStatus === "fifty-moves") {
+			finishGame({ outcome: "draw", reason: "Empate pela regra dos 50 lances." }, "draw");
+		} else if (gameStatus === "stalemate") {
+			finishGame({ outcome: "draw", reason: "Empate por afogamento." }, "draw");
+		}
+	}, [gameStatus, activeColor, finishGame]);
+	useEffect(() => {
+		if (!aiTurn || isPaused || result || pendingPromotion || finished.current
+			|| gameStatus === "checkmate" || gameStatus === "stalemate" || gameStatus === "fifty-moves") return;
+		const timer = window.setTimeout(() => {
+			const move = chooseMove(game, setup.difficulty);
+			if (move) {
+				const piece = game.board[move.from[0]][move.from[1]];
+				const promotes = piece?.type === "p" && (move.to[0] === 0 || move.to[0] === 7);
+				playAIMove(move, promotes ? "q" : undefined);
+			}
+		}, AI_RESPONSE_DELAY_MS[setup.difficulty]);
+		return () => window.clearTimeout(timer);
+	}, [aiTurn, game, gameStatus, isPaused, pendingPromotion, playAIMove, result, setup.difficulty]);
 	const handleTimeout = useCallback((color: PieceColor) => {
+		const winner = color === "white" ? "black" : "white";
+		const outcome = winner === currentUser.color ? "victory" : "defeat";
+		const winnerName = winner === "white" ? "brancas" : "pretas";
+		const loserName = color === "white" ? "brancas" : "pretas";
+		const reason = setup.mode === "human-human"
+			? `O tempo das ${loserName} acabou. Vitória das ${winnerName}.`
+			: setup.mode === "ai-ai"
+				? `O tempo da IA das ${loserName} acabou. Vitória da IA das ${winnerName}.`
+				: color === currentUser.color ? "Seu tempo acabou. Vitória do Bot." : "O tempo do Bot acabou. Você venceu.";
 		finishGame({
-			outcome: color === currentUser.color ? "defeat" : "victory",
-			reason: color === currentUser.color ? localGame ? "O tempo das brancas acabou. Vitória das pretas." : "Seu tempo acabou. Vitória do Bot." : localGame ? "O tempo das pretas acabou. Vitória das brancas." : "O tempo do Bot acabou. Você venceu.",
+			outcome,
+			reason,
 		}, "timeout");
-	}, [finishGame, localGame]);
+	}, [finishGame, setup.mode]);
 	const clockTimes = useChessClock({ activeColor, running, resetKey: clockResetKey, onTimeout: handleTimeout });
 
 	// Clique esquerdo "de verdade" limpa as setas/destaques manuais —
@@ -125,7 +170,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 				/>
 		
 				<aside className="flex flex-col gap-6">
-					<p className="text-sm text-text-muted">{gameModeLabels[setup.mode]}{setup.mode !== "human-human" && ` · Dificuldade selecionada: ${difficultyLabels[setup.difficulty]} (ainda sem efeito)`}</p>
+					<p className="text-sm text-text-muted">{gameModeLabels[setup.mode]}{setup.mode !== "human-human" && ` · Dificuldade: ${difficultyLabels[setup.difficulty]}`}</p>
 					{result ? (
 						<section aria-live="polite" className="rounded-xl border border-border bg-surface p-5">
 							<h2 className="font-display text-lg font-semibold">Partida encerrada · {resultTitles[result.outcome]}</h2>

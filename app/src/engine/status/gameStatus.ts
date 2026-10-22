@@ -17,6 +17,9 @@ export function getGameStatus(state: GameState): GameStatus {
   if (isFiftyMoveDraw(state)) {
     return 'fifty-moves';
   }
+  if (isInsufficientMaterial(state.board)) {
+    return 'insufficient-material';
+  }
   if (inCheck) {
     return 'check';
   }

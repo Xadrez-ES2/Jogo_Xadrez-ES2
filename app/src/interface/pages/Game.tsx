@@ -92,11 +92,14 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 			finishGame({ outcome: "draw", reason: "Empate pela regra dos 50 lances." }, "draw");
 		} else if (gameStatus === "stalemate") {
 			finishGame({ outcome: "draw", reason: "Empate por afogamento." }, "draw");
+		} else if (gameStatus === "insufficient-material") {
+			finishGame({ outcome: "draw", reason: "Empate por falta de peças." }, "draw");
 		}
 	}, [gameStatus, activeColor, finishGame]);
 	useEffect(() => {
 		if (!aiTurn || isPaused || result || pendingPromotion || finished.current
-			|| gameStatus === "checkmate" || gameStatus === "stalemate" || gameStatus === "fifty-moves") return;
+			|| gameStatus === "checkmate" || gameStatus === "stalemate" || gameStatus === "fifty-moves"
+			|| gameStatus === "insufficient-material") return;
 		const timer = window.setTimeout(() => {
 			const move = chooseMove(game, setup.difficulty);
 			if (move) {

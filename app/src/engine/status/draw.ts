@@ -1,4 +1,5 @@
-import type { GameState } from '../types';
+import type { Board, GameState } from '../types';
+import { getAvailablePieces } from '../board/availablePieces';
 
 // Empate pela regra dos 50 lances (automatico).
 // O contador soma 1 a cada meio-lance e zera em lance de peao ou captura.

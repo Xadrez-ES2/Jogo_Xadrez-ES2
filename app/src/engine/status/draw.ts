@@ -12,7 +12,8 @@ export function isFiftyMoveDraw(state: GameState): boolean {
 
 // Empate por falta de pecas: nenhum dos lados consegue dar xeque-mate.
 // Casos: rei contra rei, rei e bispo contra rei, rei e cavalo contra rei,
-// e rei e bispo contra rei e bispo com os bispos em casas da mesma cor.
+// e posicoes com apenas reis e bispos que atuam na mesma cor de casas,
+// inclusive varios bispos da mesma cor obtidos por promocao.
 export function isInsufficientMaterial(board: Board): boolean {
   const white = getAvailablePieces(board, 'w').filter((p) => p.piece.type !== 'k');
   const black = getAvailablePieces(board, 'b').filter((p) => p.piece.type !== 'k');
@@ -24,12 +25,11 @@ export function isInsufficientMaterial(board: Board): boolean {
   if (others.length === 1) {
     return others[0].piece.type === 'b' || others[0].piece.type === 'n';
   }
-  if (white.length === 1 && black.length === 1
-    && white[0].piece.type === 'b' && black[0].piece.type === 'b') {
-    // A cor da casa e dada pela paridade de linha + coluna
-    const whiteColor = (white[0].square[0] + white[0].square[1]) % 2;
-    const blackColor = (black[0].square[0] + black[0].square[1]) % 2;
-    return whiteColor === blackColor;
+  if (others.every((p) => p.piece.type === 'b')) {
+    // A quantidade e a cor das pecas nao importam: todos os bispos
+    // precisam estar restritos a mesma cor de casas.
+    const squareColor = (others[0].square[0] + others[0].square[1]) % 2;
+    return others.every((p) => (p.square[0] + p.square[1]) % 2 === squareColor);
   }
   return false;
 }

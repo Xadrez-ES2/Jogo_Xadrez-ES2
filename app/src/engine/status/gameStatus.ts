@@ -21,6 +21,7 @@ export function getGameStatus(state: GameState): GameStatus {
   }
   if (isInsufficientMaterial(state.board)) {
     return 'insufficient-material';
+  }
   if (isThreefoldRepetition(state)) {
     return 'threefold-repetition';
   }

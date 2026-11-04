@@ -1,7 +1,7 @@
 import type { GameState, GameStatus } from '../types';
 import { getLegalMoves } from '../moves/legalMoves';
 import { isInCheck } from './attack';
-import { isFiftyMoveDraw } from './draw';
+import { isFiftyMoveDraw, isInsufficientMaterial } from './draw';
 
 // Retorna a situacao da partida para o jogador da vez.
 // Sem lances e com o rei atacado e xeque-mate: o vencedor e quem jogou por ultimo.
@@ -16,6 +16,9 @@ export function getGameStatus(state: GameState): GameStatus {
   }
   if (isFiftyMoveDraw(state)) {
     return 'fifty-moves';
+  }
+  if (isInsufficientMaterial(state.board)) {
+    return 'insufficient-material';
   }
   if (inCheck) {
     return 'check';

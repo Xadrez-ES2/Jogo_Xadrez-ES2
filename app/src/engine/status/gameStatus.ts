@@ -1,13 +1,15 @@
 import type { GameState, GameStatus } from '../types';
 import { getLegalMoves } from '../moves/legalMoves';
 import { isInCheck } from './attack';
-import { isFiftyMoveDraw, isInsufficientMaterial } from './draw';
+import { isFiftyMoveDraw, isInsufficientMaterial, isThreefoldRepetition } from './draw';
 
 // Retorna a situacao da partida para o jogador da vez.
 // Sem lances e com o rei atacado e xeque-mate: o vencedor e quem jogou por ultimo.
 // O xeque-mate vem antes do empate: se o lance que completa os 50 lances
 // der mate, vale o mate.
 export function getGameStatus(state: GameState): GameStatus {
+  // Uma promocao pendente ainda faz parte do lance em andamento.
+  if (state.pendingPromotion) return 'playing';
   const inCheck = isInCheck(state.board, state.turn);
   const hasMoves = getLegalMoves(state).length > 0;
 
@@ -19,9 +21,12 @@ export function getGameStatus(state: GameState): GameStatus {
   }
   if (isInsufficientMaterial(state.board)) {
     return 'insufficient-material';
+  if (isThreefoldRepetition(state)) {
+    return 'threefold-repetition';
   }
   if (inCheck) {
     return 'check';
   }
   return 'playing';
 }
+

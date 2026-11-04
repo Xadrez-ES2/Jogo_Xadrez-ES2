@@ -1,12 +1,11 @@
 import type { GameState, Move } from '../types';
 import { movePiece } from '../board/movePiece';
 import { getPiece } from '../board/board';
+import { getPositionKey, recordPosition } from '../status/repetition';
 
 // Aplica a jogada e devolve um estado novo: peca movida, turno trocado,
 // numero do lance e contador dos 50 lances atualizados.
 // O estado recebido nao e alterado.
-// Os outros campos (roque, en passant, promocao) ainda passam sem mudanca
-// e serao atualizados nas issues de cada um.
 import type { Board, Color } from '../types';
 
 function applyBoardMove(state: GameState, move: Move): Board {
@@ -76,7 +75,7 @@ export function applyMove(state: GameState, move: Move): GameState {
   const isCapture = getPiece(state.board, move.to) !== null;
   const halfmoveClock = isPawnMove || isCapture ? 0 : state.internal.halfmoveClock + 1;
 
-  return {
+  return recordPosition({
     ...state,
     board: applyBoardMove(state, move),
     turn: nextTurn,
@@ -87,8 +86,9 @@ export function applyMove(state: GameState, move: Move): GameState {
       castling: updateCastlingRights(state, move),
       enPassant: nextEnPassantSquare(state, move),
       fullmoveNumber,
+      positionHistory: state.internal.positionHistory ?? [getPositionKey(state)],
     },
-  };
+  });
 }
 
 export function promotePawn(state: GameState, type: import('../types').PromotionPieceType): GameState {
@@ -98,7 +98,7 @@ export function promotePawn(state: GameState, type: import('../types').Promotion
   if (pawn?.type !== 'p' || pawn.color !== state.turn) return state;
   const board = state.board.map((row) => [...row]);
   board[square[0]][square[1]] = { type, color: pawn.color };
-  return {
+  return recordPosition({
     ...state,
     board,
     turn: state.turn === 'w' ? 'b' : 'w',
@@ -107,5 +107,6 @@ export function promotePawn(state: GameState, type: import('../types').Promotion
       ...state.internal,
       fullmoveNumber: state.turn === 'b' ? state.internal.fullmoveNumber + 1 : state.internal.fullmoveNumber,
     },
-  };
+  });
 }
+

@@ -1,5 +1,6 @@
 import type { Board, GameState } from '../types';
 import { getAvailablePieces } from '../board/availablePieces';
+import { getPositionKey } from './repetition';
 
 // Empate pela regra dos 50 lances (automatico).
 // O contador soma 1 a cada meio-lance e zera em lance de peao ou captura.
@@ -32,3 +33,16 @@ export function isInsufficientMaterial(board: Board): boolean {
   }
   return false;
 }
+
+// Empate na terceira ocorrencia da posicao atual, seguindo a convencao
+// automatica ja usada pela engine para a regra dos 50 lances.
+export function isThreefoldRepetition(state: GameState): boolean {
+  if (state.pendingPromotion) return false;
+  const key = getPositionKey(state);
+  let occurrences = 0;
+  for (const position of state.internal.positionHistory ?? []) {
+    if (position === key && ++occurrences >= 3) return true;
+  }
+  return false;
+}
+

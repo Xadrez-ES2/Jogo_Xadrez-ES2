@@ -40,10 +40,15 @@ export type GameState = {
     readonly enPassant: Square | null;
     readonly halfmoveClock: number;
     readonly fullmoveNumber: number;
+    // Chaves das posicoes completas, incluindo a inicial. Opcional para
+    // compatibilidade com estados antigos; historico ausente nao e inferido.
+    readonly positionHistory?: readonly string[];
   };
 };
 
 // Situacao da partida para o jogador da vez.
-// 'check': rei atacado; 'checkmate': rei atacado sem lances; 'stalemate': empate por afogamento.
-// 'fifty-moves': empate pela regra dos 50 lances. 'insufficient-material': empate por falta de pecas.
-export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate' | 'fifty-moves' | 'insufficient-material';
+// 'checkmate': rei atacado sem lances; 'stalemate': sem lances e sem xeque.
+// 'fifty-moves': empate pela regra dos 50 lances.
+// 'threefold-repetition': a posicao atual ocorreu pelo menos tres vezes.
+export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate' | 'fifty-moves' | 'threefold-repetition' | 'insufficient-material';
+

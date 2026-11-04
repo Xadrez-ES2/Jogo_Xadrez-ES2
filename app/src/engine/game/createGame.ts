@@ -1,10 +1,11 @@
 import type { GameState } from '../types';
 import { createInitialBoard } from '../board/board';
+import { recordPosition } from '../status/repetition';
 
 // Cria o estado de uma partida nova: posicao inicial, brancas comecam,
 // todos os roques permitidos, sem en passant e contadores no inicio.
 export function createGame(): GameState {
-  return {
+  return recordPosition({
     board: createInitialBoard(),
     turn: 'w',
     pendingPromotion: null,
@@ -19,5 +20,6 @@ export function createGame(): GameState {
       halfmoveClock: 0,
       fullmoveNumber: 1,
     },
-  };
+  });
 }
+

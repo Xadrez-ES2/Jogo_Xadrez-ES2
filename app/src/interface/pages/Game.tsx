@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { chooseMove, type Difficulty } from "../../ai";
-import { getGameStatus } from "../../engine";
+import { chooseMove } from "../../ai";
+import { getGameStatus, getLegalMoves  } from "../../engine";
+import { aiThinkTime } from "../utils/aiDelay";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { GameResultModal } from "../components/GameResultModal";
@@ -21,11 +22,6 @@ import { GameSetupForm } from "../components/GameSetupForm";
 import { gameModeLabels, type GameSetup } from "../types/gameSetup";
 import { difficultyLabels } from "../types/matchHistory";
 
-const AI_RESPONSE_DELAY_MS: Record<Difficulty, number> = {
-	easy: 1_500,
-	medium: 2_500,
-	hard: 3_500,
-};
 
 
 export function Game() {
@@ -100,16 +96,24 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 		if (!aiTurn || isPaused || result || pendingPromotion || finished.current
 			|| gameStatus === "checkmate" || gameStatus === "stalemate" || gameStatus === "fifty-moves"
 			|| gameStatus === "insufficient-material") return;
+				const thinkTime = aiThinkTime(setup.difficulty, history.length, getLegalMoves(game).length);
+		let playTimer = 0;
+		// Espera um pouco para a tela mostrar o ultimo lance, calcula o lance da IA
+		// e so joga quando completar o tempo sorteado (o calculo conta como tempo pensando)
 		const timer = window.setTimeout(() => {
+			const start = performance.now();
 			const move = chooseMove(game, setup.difficulty);
-			if (move) {
-				const piece = game.board[move.from[0]][move.from[1]];
-				const promotes = piece?.type === "p" && (move.to[0] === 0 || move.to[0] === 7);
-				playAIMove(move, promotes ? "q" : undefined);
-			}
-		}, AI_RESPONSE_DELAY_MS[setup.difficulty]);
-		return () => window.clearTimeout(timer);
-	}, [aiTurn, game, gameStatus, isPaused, pendingPromotion, playAIMove, result, setup.difficulty]);
+			if (!move) return;
+			const piece = game.board[move.from[0]][move.from[1]];
+			const promotes = piece?.type === "p" && (move.to[0] === 0 || move.to[0] === 7);
+			const remaining = Math.max(0, thinkTime - (performance.now() - start));
+			playTimer = window.setTimeout(() => playAIMove(move, promotes ? "q" : undefined), remaining);
+		}, 50);
+		return () => {
+			window.clearTimeout(timer);
+			window.clearTimeout(playTimer);
+		};
+	}, [aiTurn, game, gameStatus, history.length, isPaused, pendingPromotion, playAIMove, result, setup.difficulty]);
 	const handleTimeout = useCallback((color: PieceColor) => {
 		const winner = color === "white" ? "black" : "white";
 		const outcome = winner === currentUser.color ? "victory" : "defeat";

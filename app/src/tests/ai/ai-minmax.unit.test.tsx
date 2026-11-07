@@ -1,5 +1,5 @@
 // Issue: Teste Unitario MinMax
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import type { GameState } from "../../engine";
 import { applyMove, createGame, getGameStatus } from "../../engine";
 import { evaluate } from "../../ai/evaluation";
@@ -117,5 +117,15 @@ describe("findBestMove", () => {
     const black = stateFromFen("k7/8/8/8/8/8/p7/7K", "b");
     expect(findBestMove(black, 1)).toEqual({ from: [6, 0], to: [7, 0] });
     expect(alphaBeta(black, 1, -Infinity, Infinity)).toBe(-PIECE_VALUES.q);
+  });
+
+  test("no empate prefere promover agora a promover depois", () => {
+    // Na profundidade 3, promover agora ou no proximo lance da a mesma nota
+    vi.spyOn(Math, "random").mockReturnValue(0.99); // sorteio pegaria o ultimo empatado
+    expect(findBestMove(stateFromFen(pos.PROMOTION), 3)).toEqual({
+      from: [1, 0],
+      to: [0, 0],
+    });
+    vi.restoreAllMocks();
   });
 });

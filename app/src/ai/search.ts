@@ -60,15 +60,23 @@ export function alphaBeta(state: GameState, depth: number, alpha: number, beta: 
 export function findBestMove(state: GameState, depth: number): Move | null {
   const white = state.turn === 'w';
   let bestScore = white ? -Infinity : Infinity;
+  let bestNow = bestScore;
   const bestMoves: Move[] = [];
 
   for (const move of generateMoves(state)) {
-    const score = alphaBeta(applySearchMove(state, move), depth - 1, -Infinity, Infinity, 1);
-    if (white ? score > bestScore : score < bestScore) {
+    const next = applySearchMove(state, move);
+    const score = alphaBeta(next, depth - 1, -Infinity, Infinity, 1);
+    // Desempate: entre lances com a mesma nota, prefere o que ja ganha agora
+    // (sem isso a IA adia uma promocao ou captura que ela ve que vai conseguir depois)
+    const now = evaluate(next);
+    const better = white ? score > bestScore : score < bestScore;
+    const betterNow = score === bestScore && (white ? now > bestNow : now < bestNow);
+    if (better || betterNow) {
       bestScore = score;
+      bestNow = now;
       bestMoves.length = 0;
       bestMoves.push(move);
-    } else if (score === bestScore) {
+    } else if (score === bestScore && now === bestNow) {
       bestMoves.push(move);
     }
   }

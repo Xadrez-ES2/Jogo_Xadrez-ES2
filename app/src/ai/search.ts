@@ -26,8 +26,11 @@ export function alphaBeta(state: GameState, depth: number, alpha: number, beta: 
   if (moves.length === 0) {
     return getGameStatus(state) === 'checkmate' ? terminalScore(state, ply) : 0;
   }
+  if (isFiftyMoveDraw(state)) { //coreção pós testes unitários (nao tinha esse if)
+    return 0; // empate pelos 50 lances, em qualquer profundidade
+  }
   if (depth === 0) {
-    return isFiftyMoveDraw(state) ? 0 : evaluate(state);
+    return evaluate(state);
   }
 
   if (state.turn === 'w') {

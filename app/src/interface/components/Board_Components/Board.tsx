@@ -1,4 +1,5 @@
 import type { BoardArrow } from "../../hooks/useBoardArrows";
+import type { AnimatingMove } from "../../hooks/useGameMoves";
 import type { PieceColor, PieceType, PlayablePiece } from "../../types/pieces";
 import type { PromotionPieceType } from "../../../engine";
 import type { Player } from "../../types/player";
@@ -8,6 +9,7 @@ import { PieceGlyph } from "./PieceGlyph";
 import { PlayerBar } from "./PlayerBar";
 import { Square } from "./Square";
 import type { ClockTimes } from "../../hooks/useChessClock";
+import { AnimatedPieceLayer } from "./AnimatedPieceLayer";
 
 /* Coordenadas "reais" do tabuleiro — não mudam com a orientação visual. */
 const BASE_FILES: Files[] = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -63,6 +65,15 @@ interface BoardProps {
         - "black" inverte tudo — útil quando o usuário joga de pretas.
     */
     orientation?: PieceColor;
+
+    /**
+     * Lance que deve ser animado (peça deslizando de origem → destino).
+     * Durante o deslocamento, a peça é ocultada do grid estático para evitar duplicação.
+     */
+    animatingMove?: AnimatingMove | null;
+    
+    /** Chamado quando a animação de movimento termina. */
+    onAnimationEnd?: () => void;
 }
 
 export function Board({
@@ -86,6 +97,8 @@ export function Board({
     onSquareContextMouseDown,
     onSquareContextMouseUp,
     orientation = "white",
+    animatingMove,
+    onAnimationEnd,
 }: BoardProps) {
     
     const displayFiles = orientation === "black" ? [...BASE_FILES].reverse() : BASE_FILES;
@@ -99,7 +112,6 @@ export function Board({
         return lastMove?.from === squareId || lastMove?.to === squareId;
     }
 
- 
     return (
         <div className="flex flex-col items-center gap-3">
             
@@ -126,46 +138,62 @@ export function Board({
                     
                     </div>
         
-                    {/* Wrapper relativo: o overlay de setas precisa se posicionar
+                    {/* Wrapper relativo: o overlay de setas e a animação se posicionam
                         exatamente por cima do grid, casa por casa. */}
                     <div className="relative flex-1">
+                        
                         <div className="relative overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
-                        <div className="grid grid-cols-8 grid-rows-8">
+                        
+                            <div className="grid grid-cols-8 grid-rows-8">
+                                
+                                {displayRanks.flatMap((rank) =>
+                                    displayFiles.map((file) => {
+                                        
+                                        // Regra padrão de xadrez: a1 é escura
+                                        const fileIndex = BASE_FILES.indexOf(file) + 1; // 1 (a) .. 8 (h)
+                                        
+                                        const isLight = (fileIndex + rank) % 2 === 1;
+                                        const squareId: SquareId = `${file}${rank}`;
+                                        
+                                        // Oculta a peça nas casas de origem e destino durante a animação (evita duplicação)
+                                        const isAnimatingPiece = Boolean(
+                                            animatingMove && (animatingMove.from === squareId || animatingMove.to === squareId)
+                                        );
+                        
+                                        return (
+                                            <Square
+                                                disabled={disabled}
+                                                key={squareId}
+                                                id={squareId}
+                                                isLight={isLight}
+                                                piece={getPiece(squareId)}
+                                                isSelected={selectedSquare === squareId}
+                                                isLegalMove={legalMoves?.includes(squareId)}
+                                                isLastMove={isLastMoveSquare(squareId)}
+                                                isCheck={checkSquare === squareId}
+                                                isAnnotated={highlightedSquares.includes(squareId)}
+                                                isAnimatingPiece={isAnimatingPiece}
+                                                onSelect={onSquareSelect}
+                                                onContextMouseDown={onSquareContextMouseDown}
+                                                onContextMouseUp={onSquareContextMouseUp}
+                                            />
+                                        );
+                                    })
+                                )}
                             
-                            {displayRanks.flatMap((rank) =>
-                                displayFiles.map((file) => {
-                                    
-                                    // Regra padrão de xadrez: a1 é escura
-                                    const fileIndex = BASE_FILES.indexOf(file) + 1; // 1 (a) .. 8 (h)
-                                    
-                                    
-                                    const isLight = (fileIndex + rank) % 2 === 1;
-                                    const squareId: SquareId = `${file}${rank}`;
-                    
-                                    return (
-                                        <Square
-                                            disabled={disabled}
-                                            key={squareId}
-                                            id={squareId}
-                                            isLight={isLight}
-                                            piece={getPiece(squareId)}
-                                            isSelected={selectedSquare === squareId}
-                                            isLegalMove={legalMoves?.includes(squareId)}
-                                            isLastMove={isLastMoveSquare(squareId)}
-                                            isCheck={checkSquare === squareId}
-                                            isAnnotated={highlightedSquares.includes(squareId)}
-                                            onSelect={onSquareSelect}
-                                            onContextMouseDown={onSquareContextMouseDown}
-                                            onContextMouseUp={onSquareContextMouseUp}
-                                        />
-                                    );
-                                })
-                            )}
+                            </div>
+
+                            {/* Layer de animação de peça (voo de origem → destino) */}
+                            <AnimatedPieceLayer
+                                animation={animatingMove ?? undefined}
+                                orientation={orientation}
+                                onAnimationEnd={onAnimationEnd ?? (() => {})}
+                            />
+
+                            <BoardArrowsOverlay arrows={arrows} orientation={orientation} />
                         
                         </div>
-            
-                        <BoardArrowsOverlay arrows={arrows} orientation={orientation} />
-                        </div>
+                        
                         {promotionSquare && onPromotionSelect && (() => {
                             const row = 8 - Number(promotionSquare[1]);
                             const col = BASE_FILES.indexOf(promotionSquare[0] as Files);

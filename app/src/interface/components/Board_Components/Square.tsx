@@ -29,6 +29,12 @@ interface SquareProps {
 
     // Casa marcada manualmente pelo jogador (anotação, não é lance).
     isAnnotated?: boolean;
+
+    /*
+        Quando `true`, a peça desta casa está sendo animada pelo AnimatedPieceLayer
+        e deve ser ocultada aqui para evitar duplicação visual durante o voo.
+    */
+    isAnimatingPiece?: boolean;
     
     // Notificado com o id da casa quando ela é clicada/tocada.Opcional até conter lógica da Máquina de Regras.
     onSelect?: (square: SquareId) => void;
@@ -54,6 +60,7 @@ export function Square({
     isLastMove = false,
     isCheck = false,
     isAnnotated = false,
+    isAnimatingPiece = false,
     onSelect,
     onContextMouseDown,
     onContextMouseUp,
@@ -73,6 +80,7 @@ export function Square({
             onMouseUp={(event) => { if (!disabled) onContextMouseUp?.(id, event); }}
             aria-label={accessibleLabel}
             aria-pressed={isSelected}
+            data-squareid={id}
             data-move-destination={isLegalMove ? "true" : undefined}
             className={`relative flex aspect-square cursor-default items-center justify-center transition-colors ${
                 isLight ? "bg-board-light" : "bg-board-dark" }`}
@@ -97,13 +105,6 @@ export function Square({
             {/* Anel de seleção da casa de origem */}
             {isSelected && (
 
-                // Versão com <span />:
-                // <span
-                //     className="absolute inset-0 ring-2 ring-inset ring-accent"
-                //     aria-hidden="true"
-                // />
-                
-                // Versão com <div /> (Mais aceito no momento)
                 <div 
                     className="absolute size-full border-solid border-4 border-accent"
                     aria-hidden="true"
@@ -129,7 +130,8 @@ export function Square({
                 />
             )}
 
-            {piece && <PieceGlyph playablePiece={piece} />}
+            {/* Peça — ocultada durante animação de voo para evitar duplicação visual */}
+            {piece && !isAnimatingPiece && <PieceGlyph playablePiece={piece} />}
         
         </button>
     );

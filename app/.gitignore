@@ -24,3 +24,8 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Testing & Cache
+.vitest/
+*.tsbuildinfo
+.eslintcache

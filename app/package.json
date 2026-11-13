@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "tsx --tsconfig tsconfig.app.json --test tests/*.test.tsx",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage --coverage.include=src/ai/**/*.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

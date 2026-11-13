@@ -40,10 +40,14 @@ export function useHistoryNavigation(snapshots: GameState[], history: PlayedMove
         : viewIndex > 0 ? history[viewIndex - 1] : undefined;
 
     /* Vai ao ponto inicial da partida. */
-    const goToStart = useCallback(() => setViewIndex(0), []);
+    const goToStart = useCallback(() => {
+        if (totalPlies === 0) return;
+        setViewIndex(0);
+    }, [totalPlies]);
 
     /* Recua um lance. Se já no início, permanece. */
     const goBack = useCallback(() => {
+        if (totalPlies === 0) return;
         setViewIndex((prev) => {
             const current = prev ?? totalPlies;
             return Math.max(0, current - 1);
@@ -52,6 +56,7 @@ export function useHistoryNavigation(snapshots: GameState[], history: PlayedMove
 
     /* Avança um lance. Se já no fim, retorna ao modo ao vivo. */
     const goForward = useCallback(() => {
+        if (totalPlies === 0) return;
         setViewIndex((prev) => {
             const current = prev ?? totalPlies;
             const next = current + 1;

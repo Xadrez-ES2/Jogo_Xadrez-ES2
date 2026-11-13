@@ -40,5 +40,4 @@ export const botOpponent: Player = {
     avatarUrl: "",
     color: "black",
     isBot: true,
-    rating: 800,
 };

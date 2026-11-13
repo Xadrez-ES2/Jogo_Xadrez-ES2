@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useReducer } from "react";
 import { applyMove, createGame, getLegalMoves, getPiece, promotePawn, sameSquare } from "../../engine";
 import type { GameState, Move as EngineMove, PromotionPieceType, Square } from "../../engine";
-import type { PieceColor, PieceType } from "../types/pieces";
+import type { PieceColor, PieceType, PlayablePiece } from "../types/pieces";
 import type { BoardState, Move, SquareId } from "../types/square";
 
 const files = "abcdefgh";
@@ -29,14 +29,36 @@ export interface PlayedMove extends Move {
     promotion?: PromotionPieceType;
     castle?: "kingSide" | "queenSide";
 }
+
+export interface AnimatingMove {
+    id: string;
+    from: SquareId;
+    to: SquareId;
+    piece: PlayablePiece;
+}
+
 interface State {
     game: GameState;
     selected?: SquareId;
     history: PlayedMove[];
+    /* Snapshots do estado do jogo — snapshots[0] = início, snapshots[i] = estado após history[i-1]. */
+    snapshots: GameState[];
+    /* Lance que está em animação de deslocamento neste momento */
+    animatingMove?: AnimatingMove | null;
 }
-type Action = { type: "select"; square: SquareId } | { type: "clear" } | { type: "reset" } | { type: "promote"; piece: PromotionPieceType } | { type: "play"; move: EngineMove; promotion?: PromotionPieceType };
+
+type Action =
+    | { type: "select"; square: SquareId }
+    | { type: "clear" }
+    | { type: "reset" }
+    | { type: "promote"; piece: PromotionPieceType }
+    | { type: "play"; move: EngineMove; promotion?: PromotionPieceType }
+    | { type: "undo"; plies: number }
+    | { type: "clearAnimation" };
+
 export function createMoveState(): State {
-    return { game: createGame(), history: [] };
+    const initial = createGame();
+    return { game: initial, history: [], snapshots: [initial], animatingMove: null };
 }
 
 function applyPlayedMove(state: State, move: EngineMove, promotion?: PromotionPieceType): State {
@@ -54,6 +76,13 @@ function applyPlayedMove(state: State, move: EngineMove, promotion?: PromotionPi
     let game = applyMove(state.game, move);
     if (promotion) game = promotePawn(game, promotion);
 
+    const playableMovingPiece: PlayablePiece = {
+        piece: { type: pieceTypes[movingPiece!.type] },
+        color: state.game.turn === "w" ? "white" : "black",
+    };
+
+    const moveIndex = state.history.length + 1;
+
     return {
         game,
         selected: undefined,
@@ -69,21 +98,46 @@ function applyPlayedMove(state: State, move: EngineMove, promotion?: PromotionPi
                 ? (to[1] > from[1] ? "kingSide" : "queenSide")
                 : undefined,
         }],
+        snapshots: [...state.snapshots, game],
+        animatingMove: {
+            id: `${fromId}-${toId}-${moveIndex}`,
+            from: fromId,
+            to: toId,
+            piece: playableMovingPiece,
+        },
     };
 }
 
 export function gameMovesReducer(state: State, action: Action): State {
+    if (action.type === "clearAnimation") return { ...state, animatingMove: null };
     if (action.type === "reset") return createMoveState();
     if (action.type === "clear") return { ...state, selected: undefined };
     if (action.type === "play") return applyPlayedMove(state, action.move, action.promotion);
     if (action.type === "promote") {
         if (!state.game.pendingPromotion) return state;
+        const promotedGame = promotePawn(state.game, action.piece);
         return {
             ...state,
-            game: promotePawn(state.game, action.piece),
+            game: promotedGame,
             history: state.history.map((move, index) => index === state.history.length - 1
                 ? { ...move, promotion: action.piece }
                 : move),
+            snapshots: [...state.snapshots.slice(0, -1), promotedGame],
+            animatingMove: null,
+        };
+    }
+    if (action.type === "undo") {
+        const plies = Math.max(1, action.plies);
+        // snapshots[0] = estado inicial (antes do primeiro lance)
+        // snapshots[i] = estado após history[i-1]
+        // Para voltar `plies` lances: alvo = snapshots.length - 1 - plies
+        const targetIdx = Math.max(0, state.snapshots.length - 1 - plies);
+        return {
+            game: state.snapshots[targetIdx],
+            selected: undefined,
+            history: state.history.slice(0, targetIdx),
+            snapshots: state.snapshots.slice(0, targetIdx + 1),
+            animatingMove: null,
         };
     }
     const to = toEngineSquare(action.square);
@@ -100,6 +154,7 @@ export function gameMovesReducer(state: State, action: Action): State {
     };
     return state;
 }
+
 export function useGameMoves() {
     const [state, dispatch] = useReducer(gameMovesReducer, undefined, createMoveState);
     const pieces = useMemo(() => toBoardState(state.game), [state.game]);
@@ -110,12 +165,22 @@ export function useGameMoves() {
     const playAIMove = useCallback((move: EngineMove, promotion?: PromotionPieceType) => {
         dispatch({ type: "play", move, promotion });
     }, []);
+    const undo = useCallback((plies: number) => {
+        dispatch({ type: "undo", plies });
+    }, []);
+    const clearAnimation = useCallback(() => {
+        dispatch({ type: "clearAnimation" });
+    }, []);
+
     return {
         game: state.game, pieces, legalMoves, selectedSquare: state.selected, history: state.history,
+        snapshots: state.snapshots,
+        animatingMove: state.animatingMove ?? undefined,
+        clearAnimation,
         pendingPromotion: state.game.pendingPromotion ? toSquareId(state.game.pendingPromotion) : undefined,
         lastMove: state.history.at(-1), activeColor: (state.game.turn === "w" ? "white" : "black") as PieceColor,
         handleSquareSelect: (square: SquareId) => dispatch({ type: "select", square }),
         choosePromotion: (piece: PromotionPieceType) => dispatch({ type: "promote", piece }),
-        clearSelection, playAIMove, resetMoves: () => dispatch({ type: "reset" }),
+        clearSelection, playAIMove, resetMoves: () => dispatch({ type: "reset" }), undo,
     };
 }

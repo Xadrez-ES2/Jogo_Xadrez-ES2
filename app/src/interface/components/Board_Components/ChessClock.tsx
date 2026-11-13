@@ -5,8 +5,14 @@ interface ChessClockProps {
 }
 
 export function ChessClock({ remainingMs, active, playerName }: ChessClockProps) {
-    const seconds = Math.ceil(Math.max(0, remainingMs) / 1000);
-    const display = `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
+    const totalSeconds = Math.ceil(Math.max(0, remainingMs) / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const display = hours > 0
+        ? `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+        : `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     const lowTime = remainingMs <= 30_000;
 
     return (

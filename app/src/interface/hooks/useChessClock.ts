@@ -9,22 +9,33 @@ interface ChessClockOptions {
     running: boolean;
     resetKey: number;
     onTimeout: (color: PieceColor) => void;
-    initialTimeMs?: number;
+    /* Duração inicial em ms. `null` desativa o relógio (partida sem tempo). */
+    initialTimeMs?: number | null;
 }
 
-export function useChessClock({ activeColor, running, resetKey, onTimeout, initialTimeMs = INITIAL_TIME_MS }: ChessClockOptions) {
-    const [times, setTimes] = useState<ClockTimes>({ white: initialTimeMs, black: initialTimeMs });
+export function useChessClock({
+    activeColor,
+    running,
+    resetKey,
+    onTimeout,
+    initialTimeMs = INITIAL_TIME_MS,
+}: ChessClockOptions): ClockTimes | undefined {
+    const hasTimer = initialTimeMs !== null && initialTimeMs !== undefined;
+    const baseTime = initialTimeMs ?? INITIAL_TIME_MS;
+
+    const [times, setTimes] = useState<ClockTimes>({ white: baseTime, black: baseTime });
     const remaining = useRef(times);
     const timeoutReported = useRef(false);
 
     useEffect(() => {
-        remaining.current = { white: initialTimeMs, black: initialTimeMs };
+        if (!hasTimer) return;
+        remaining.current = { white: baseTime, black: baseTime };
         timeoutReported.current = false;
         setTimes(remaining.current);
-    }, [resetKey, initialTimeMs]);
+    }, [resetKey, baseTime, hasTimer]);
 
     useEffect(() => {
-        if (!running || remaining.current[activeColor] === 0) return;
+        if (!hasTimer || !running || remaining.current[activeColor] === 0) return;
         const startedAt = Date.now();
         const startingTime = remaining.current[activeColor];
 
@@ -42,14 +53,19 @@ export function useChessClock({ activeColor, running, resetKey, onTimeout, initi
             // Preserva frações de segundo ao pausar ou trocar de jogador.
             update();
         };
-    }, [activeColor, running, resetKey, initialTimeMs]);
+    }, [activeColor, running, resetKey, baseTime, hasTimer]);
 
     useEffect(() => {
+        if (!hasTimer) return;
         if (remaining.current[activeColor] === 0 && !timeoutReported.current) {
             timeoutReported.current = true;
             onTimeout(activeColor);
         }
-    }, [times, activeColor, onTimeout]);
+    }, [times, activeColor, onTimeout, hasTimer]);
+
+    if (!hasTimer) {
+        return undefined;
+    }
 
     return times;
 }

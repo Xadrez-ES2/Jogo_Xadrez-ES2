@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 
-type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "bad";
 
 interface BaseProps {
 	children: ReactNode;
@@ -20,6 +20,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 	secondary:
 		"bg-surface-alt text-text-primary border border-border hover:border-accent",
 	ghost: "bg-transparent text-text-primary border border-border hover:bg-surface-alt",
+	bad: "bg-danger text-text-primary border border-border hover:bg-danger/80",
 };
 
 // Componente de botão reutilizável, com diferentes variantes dinâmicas
@@ -34,7 +35,7 @@ export function Button({
 
 	// Constante base de classes de estilo para o botão
 	const base =
-		"group relative inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-4 font-body text-base font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50";
+		"group relative inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-4 font-body text-base font-semibold transition-all duration-200 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 
 	// Constante que combina as classes base, as específicas da variante e quaisquer adicionais via props
 	const classes = `${base} ${variantClasses[variant]} ${className}`;

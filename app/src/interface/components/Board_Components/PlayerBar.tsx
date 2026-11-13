@@ -45,13 +45,6 @@ export function PlayerBar({ player, remainingMs, clockActive = false, capturedPi
                     
                     <p className="truncate font-body text-sm font-semibold text-text-primary">
                         {player.name}
-                        
-                        {player.rating !== undefined && (
-                            <span className="ml-2 font-mono text-xs font-normal text-text-muted">
-                                {player.rating} · {player.color === "white" ? "Brancas" : "Pretas"}
-                            </span>
-                        )}
-                    
                     </p>
                 
                     <div className="flex min-h-4 items-center gap-0.5" role="group" aria-label="Peças capturadas">

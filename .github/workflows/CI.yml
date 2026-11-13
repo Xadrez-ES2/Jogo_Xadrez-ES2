@@ -38,6 +38,11 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Criar arquivo .env
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: printf "%s\n" "$ENV_FILE" > .env
+
       - name: Testes
         run: npm test
 
@@ -51,7 +56,6 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
-          # Atenção ao prefixo app/ pois o build ocorre dentro de working-directory: app
           path: app/dist
 
   deploy:

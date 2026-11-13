@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1794608521210" clover="3.2.0">
+  <project timestamp="1794608521210" name="All files">
+    <metrics statements="14" coveredstatements="14" conditionals="14" coveredconditionals="14" methods="1" coveredmethods="1" elements="29" coveredelements="29" complexity="0" loc="14" ncloc="14" packages="1" files="1" classes="1"/>
+    <file name="gameStatus.ts" path="C:\dev\xadrez\Jogo_Xadrez-ES2\app\src\engine\status\gameStatus.ts">
+      <metrics statements="14" coveredstatements="14" conditionals="14" coveredconditionals="14" methods="1" coveredmethods="1"/>
+      <line num="12" count="11" type="cond" truecount="2" falsecount="0"/>
+      <line num="13" count="10" type="stmt"/>
+      <line num="14" count="10" type="stmt"/>
+      <line num="16" count="10" type="cond" truecount="2" falsecount="0"/>
+      <line num="17" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="19" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="20" count="1" type="stmt"/>
+      <line num="22" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="23" count="1" type="stmt"/>
+      <line num="25" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="26" count="1" type="stmt"/>
+      <line num="28" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="29" count="1" type="stmt"/>
+      <line num="31" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>

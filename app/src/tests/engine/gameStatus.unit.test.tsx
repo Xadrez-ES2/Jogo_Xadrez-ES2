@@ -25,6 +25,11 @@ describe('getGameStatus', () => {
     expect(getGameStatus(position('4k3/8/8/8/8/8/4P3/4K3'))).toBe('playing');
   });
 
+  test('retorna playing enquanto a promocao esta pendente', () => {
+    const state = position('7k/P7/8/8/8/8/8/K7');
+    expect(getGameStatus({ ...state, pendingPromotion: [0, 0] })).toBe('playing');
+  });
+
   test('retorna check quando o rei esta atacado e ainda pode jogar', () => {
     expect(getGameStatus(position('4k3/8/8/8/8/8/8/4R1K1', 'b'))).toBe('check');
   });

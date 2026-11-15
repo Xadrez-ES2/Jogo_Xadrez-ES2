@@ -1,10 +1,3 @@
-// Issue: Teste de integracao: en passant na IA
-// Onde colocar: app/src/tests/ai/ai-enpassant.integration.test.tsx
-//
-// Objetivo: verificar que a IA enxerga o en passant, escolhe a captura quando ela
-// ganha material e nunca a joga quando ela deixaria o proprio rei em xeque.
-// O en passant e o unico lance cujo alvo e uma casa vazia e que remove uma peca de
-// OUTRA casa, entao e um bom teste de que IA e engine concordam sobre o estado.
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import type { Color, GameState, Move, Square } from '../../engine';
 import { applyMove, getLegalMoves, getPiece } from '../../engine';

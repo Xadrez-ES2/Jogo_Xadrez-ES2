@@ -1,4 +1,4 @@
-// Funcoes de apoio dos testes da IA (nao e um arquivo de teste).
+// Funcoes de apoio dos testes da IA.
 import type { Color, GameState } from '../../engine';
 import { boardFromFen } from '../../engine/board/notation_for_test';
 

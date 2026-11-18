@@ -132,6 +132,11 @@ export function Square({
 
             {/* Peça — ocultada durante animação de voo para evitar duplicação visual */}
             {piece && !isAnimatingPiece && <PieceGlyph playablePiece={piece} />}
+
+            {/* Placeholder invisível para manter o tamanho da casa consistente durante a animação de voo da peça */}
+            {(!piece || isAnimatingPiece) && (
+                <div className="pointer-events-none select-none w-12 h-12 z-10 object-contain sm:w-15 sm:h-15" />
+            )}
         
         </button>
     );

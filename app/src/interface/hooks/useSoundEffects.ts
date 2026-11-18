@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
 
-
-// VER SONS BONS 
-
 /*
     Eventos de áudio suportados pelo jogo.
     Mapeados para os arquivos em app/src/sounds.
@@ -13,9 +10,9 @@ const SOUND_MAP: Record<SoundEvent, string> = {
     move: "../../sounds/Move.mp3",
     capture: "../../sounds/Capture.mp3",
     check: "../../sounds/Check.mp3",
-    castle: "../../sounds/Move.mp3",
-    gameOver: "../../sounds/Victory.mp3",
-    illegal: "../../sounds/Check.mp3",
+    castle: "../../sounds/Castles.mp3",
+    gameOver: "../../sounds/Draw.mp3",
+    illegal: "../../sounds/Draw.mp3",
 };
 
 const STORAGE_KEY = "chess-muted";

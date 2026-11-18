@@ -1,4 +1,5 @@
 import { Button } from "../components/ui/Button";
+import Piece3D from "../components/Piece3D";
 
 export function Home() {
 	return (
@@ -14,18 +15,23 @@ export function Home() {
 				
 				<div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 py-24 text-center sm:py-32">
 
-					{/* <Piece3D /> */}
-					
-					<h1 className=" font-display text-5xl font-semibold leading-[1.05] tracking-tight text-text-primary sm:text-6xl md:text-7xl">
-						
-						Jogo de Xadrez Web
-						
-						<br />
-						<span className="text-accent">Engenharia de Software II</span>
-					
-					</h1>
+					<div className="relative flex items-center justify-center">
+						{/* Peça 3D rotativa posicionada atrás dos textos de título */}
+						<div
+							aria-hidden="true"
+							className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-65 select-none sm:scale-110 md:scale-125"
+						>
+							<Piece3D className="w-80 h-80" />
+						</div>
 
-					<div className="mt-10 flex flex-col gap-4 sm:flex-row">
+						<h1 className="relative z-10 font-display text-5xl font-semibold leading-[1.05] tracking-tight text-text-primary sm:text-6xl md:text-7xl">
+							Jogo de Xadrez Web
+							<br />
+							<span className="text-accent">Engenharia de Software II</span>
+						</h1>
+					</div>
+
+					<div className="relative z-10 mt-10 flex flex-col gap-4 sm:flex-row">
 						<Button to="/game" variant="primary" className="sm:w-56">
 							Jogar agora
 						</Button>

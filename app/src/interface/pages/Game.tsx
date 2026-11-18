@@ -24,6 +24,7 @@ import { difficultyLabels } from "../types/matchHistory";
 import { useSoundEffects } from "../hooks/useSoundEffects";
 import { useHistoryNavigation } from "../hooks/useHistoryNavigation";
 import { SoundToggleButton } from "../components/ui/SoundToggleButton";
+import { sortCapturedPieces } from "../utils/AuxFunctions";
 
 // Componente principal da página de jogo. Gerencia o estado da partida.
 export function Game() {
@@ -69,12 +70,18 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	// ── Definição do Oponente ──
 	const opponent = localGame ? { ...botOpponent, id: "local-black", name: "Pessoa 2 (pretas)", isBot: false, rating: undefined } : setup.mode === "ai-ai" ? { ...botOpponent, name: "IA (pretas)" } : botOpponent;
 
-	// ── Peças capturadas (Player de cima e de abaixo) ──
-	const topCapturedPieces = history.filter((move) => move.color === opponent.color && move.capturedPiece).map((move) => move.capturedPiece!);
+	// ── Peças capturadas (Player de cima e de abaixo) ordenadas por valor ──
+	const topCapturedPieces = useMemo(() => {
+		const raw = history.filter((move) => move.color === opponent.color && move.capturedPiece).map((move) => move.capturedPiece!);
+		return sortCapturedPieces(raw);
+	}, [history, opponent.color]);
 
 	const bottomColor = setup.mode === "ai-ai" ? "white" : player.color;
 
-	const bottomCapturedPieces = history.filter((move) => move.color === bottomColor && move.capturedPiece).map((move) => move.capturedPiece!);
+	const bottomCapturedPieces = useMemo(() => {
+		const raw = history.filter((move) => move.color === bottomColor && move.capturedPiece).map((move) => move.capturedPiece!);
+		return sortCapturedPieces(raw);
+	}, [history, bottomColor]);
 
 	// ── Variáveis de Estado ──
 	const [confirmResignation, setConfirmResignation] = useState(false);
@@ -183,6 +190,10 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 		? historyNav.viewLastMove
 		: lastMove;
 
+	// ── Pausa no modo IA vs IA ao consultar estado antigo ──
+	const isAIAIPausedDueToHistory = setup.mode === "ai-ai" && historyNav.isViewingHistory;
+	const effectivePaused = isPaused || isAIAIPausedDueToHistory;
+
 	// ── Versão de undo (para evitar que a IA jogue no estado revertido) ───────
 	const undoVersion = useRef(0);
 
@@ -203,7 +214,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 		clearAnimation();
 	}
 
-	const canUndo = history.length > 0 && result === null && !isPaused;
+	const canUndo = history.length > 0 && result === null && !effectivePaused;
 
 	const {
 		arrows,
@@ -214,7 +225,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	} = useBoardArrows();
 
 	const hasClock = setup.timeLimitMs !== null;
-	const running = (canPlay || aiTurn) && !isPaused && result === null && hasClock;
+	const running = (canPlay || aiTurn) && !effectivePaused && result === null && hasClock;
 
 	const finishGame = useCallback((nextResult: GameResult, reasonCode: EndReason) => {
 		if (finished.current) return;
@@ -248,7 +259,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	}, [gameStatus, activeColor, finishGame]);
 
 	useEffect(() => {
-		if (!aiTurn || isPaused || result || pendingPromotion || finished.current
+		if (!aiTurn || effectivePaused || result || pendingPromotion || finished.current
 			|| gameStatus === "checkmate" || gameStatus === "stalemate" || gameStatus === "fifty-moves"
 			|| gameStatus === "insufficient-material") return;
 		const thinkTime = aiThinkTime(setup.difficulty, history.length, getLegalMoves(game).length);
@@ -273,7 +284,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 			window.clearTimeout(timer);
 			window.clearTimeout(playTimer);
 		};
-	}, [aiTurn, game, gameStatus, history.length, isPaused, pendingPromotion, playAIMove, result, setup.difficulty]);
+	}, [aiTurn, effectivePaused, game, gameStatus, history.length, pendingPromotion, playAIMove, result, setup.difficulty]);
 
 	const handleTimeout = useCallback((color: PieceColor) => {
 		const winner = color === "white" ? "black" : "white";
@@ -301,7 +312,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 
 	// Clique esquerdo "de verdade" limpa as setas/destaques manuais
 	function handleSquareLeftClick(square: Parameters<typeof handleSquareSelect>[0]) {
-		if (finished.current || result || isPaused) return;
+		if (finished.current || result || effectivePaused) return;
 		// Se está visualizando o histórico, bloqueia jogadas
 		if (historyNav.isViewingHistory) return;
 		if (!canPlay) return;
@@ -342,8 +353,8 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 		: `${Math.round((setup.timeLimitMs ?? INITIAL_TIME_MS) / 60000)} min`;
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col items-center justify-start px-6 py-6">
-			<div className="grid w-full max-w-6xl grid-cols-1 items-start gap-8 lg:grid-cols-[2fr_1fr]">
+		<div className="flex min-h-0 flex-1 flex-col items-center justify-start px-4 py-4 sm:px-6 sm:py-6 lg:justify-center lg:overflow-hidden lg:py-2">
+			<div className="grid w-full max-w-6xl grid-cols-1 items-start gap-4 lg:grid-cols-[2fr_1fr] lg:gap-6">
 				<Board
 					topPlayer={opponent}
 					bottomPlayer={setup.mode === "ai-ai" ? { ...botOpponent, id: "white-ai", name: "IA (brancas)", color: "white" } : player}
@@ -355,7 +366,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 					legalMoves={historyNav.isViewingHistory ? [] : legalMoves}
 					lastMove={effectiveLastMove}
 					checkSquare={checkSquare}
-					disabled={result !== null || isPaused || (!canPlay && !historyNav.isViewingHistory) || pendingPromotion !== undefined || historyNav.isViewingHistory}
+					disabled={result !== null || effectivePaused || (!canPlay && !historyNav.isViewingHistory) || pendingPromotion !== undefined || historyNav.isViewingHistory}
 					clockTimes={clockTimes}
 					activeClock={running && hasClock ? activeColor : undefined}
 					selectedSquare={historyNav.isViewingHistory ? undefined : selectedSquare}
@@ -368,7 +379,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 					onAnimationEnd={clearAnimation}
 				/>
 
-				<aside className="flex flex-col gap-5 lg:sticky lg:top-24">
+				<aside className="flex flex-col gap-3 lg:gap-3.5">
 					<div className="flex items-center justify-between shrink-0">
 						<p className="text-sm text-text-muted">
 							{gameModeLabels[setup.mode]}
@@ -379,17 +390,24 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 					</div>
 
 					{result ? (
-						<section aria-live="polite" className="rounded-xl border border-border bg-surface p-5">
-							<h2 className="font-display text-lg font-semibold">Partida encerrada · {resultTitles[result.outcome]}</h2>
-							<p className="mt-3 text-sm text-text-muted">{result.reason}</p>
-							{setup.mode !== "human-ai" ? <p className="mt-3 text-sm text-text-muted">Partida local. O resultado não será salvo no perfil.</p> : <MatchSaveNotice status={saveStatus} onRetry={retrySave} />}
-							<Button to="/profile" variant="ghost" className="mt-3">Ver meu perfil</Button>
-							<Button variant="ghost" className="mt-4" onClick={() => setShowResult(true)}>Ver resultado</Button>
+						<section aria-live="polite" className="rounded-xl border border-border bg-surface p-3.5 sm:p-4">
+							<h2 className="font-display text-base font-semibold">Partida encerrada · {resultTitles[result.outcome]}</h2>
+							<p className="mt-1.5 text-xs text-text-muted">{result.reason}</p>
+							{setup.mode !== "human-ai" ? <p className="mt-1.5 text-xs text-text-muted">Partida local. O resultado não será salvo no perfil.</p> : <MatchSaveNotice status={saveStatus} onRetry={retrySave} />}
+							<div className="mt-3 flex gap-2">
+								<Button to="/profile" variant="ghost" className="flex-1 text-xs">Ver perfil</Button>
+								<Button variant="ghost" className="flex-1 text-xs" onClick={() => setShowResult(true)}>Ver resultado</Button>
+							</div>
 						</section>
 					) : isPaused ? (
-						<section role="status" className="rounded-xl border border-accent bg-surface p-5">
-							<h2 className="font-display text-lg font-semibold text-accent">Partida pausada</h2>
-							<p className="mt-3 text-sm text-text-muted">Retome a partida para interagir com o tabuleiro.</p>
+						<section role="status" className="rounded-xl border border-accent bg-surface p-3.5 sm:p-4">
+							<h2 className="font-display text-base font-semibold text-accent">Partida pausada</h2>
+							<p className="mt-1.5 text-xs text-text-muted">Retome a partida para interagir com o tabuleiro.</p>
+						</section>
+					) : isAIAIPausedDueToHistory ? (
+						<section role="status" className="rounded-xl border border-accent bg-surface p-3.5 sm:p-4">
+							<h2 className="font-display text-base font-semibold text-accent">Partida pausada</h2>
+							<p className="mt-1.5 text-xs text-text-muted">Partida das IAs pausada durante a consulta do histórico. Volte ao lance atual para retomar.</p>
 						</section>
 					) : <StatusPanel activeColor={activeColor} mode={setup.mode} />}
 
@@ -412,10 +430,12 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 						canResign={!result && setup.mode !== "ai-ai"}
 					/>
 
-					{result && (
-						<Button onClick={restart} disabled={saving}>Nova partida</Button>
-					)}
-					<Button variant="ghost" onClick={restart} disabled={saving}>Configurar nova partida</Button>
+					<div className="flex gap-2">
+						{result && (
+							<Button onClick={restart} disabled={saving} className="flex-1">Nova partida</Button>
+						)}
+						<Button variant="ghost" onClick={restart} disabled={saving} className="flex-1">Configurar nova partida</Button>
+					</div>
 				</aside>
 			</div>
 

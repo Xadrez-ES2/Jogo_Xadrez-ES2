@@ -42,9 +42,8 @@ export default function Piece3D({
 	// Array para mapear as fatias centradas no eixo Z
 	const layerIndices = Array.from({ length: LAYER_COUNT }, (_, i) => i - Math.floor(LAYER_COUNT / 2));
 
-	const base = "min-h-screen flex items-center justify-center overflow-hidden p-6";
-
-	const classes = `${base} ${className}`;
+	const base = className ? "" : "min-h-screen p-6";
+	const classes = `flex items-center justify-center overflow-hidden ${base} ${className}`.trim();
 
 	return (
 		<div className={classes}>
@@ -72,7 +71,7 @@ export default function Piece3D({
 							filter: 'drop-shadow(0px 6px 12px rgba(0,0,0,0.4))'
 						}}
 					>
-						<svg viewBox="0 0 24 24" className="w-full h-full p-4 text-amber-400">
+						<svg viewBox="0 0 24 24" className="w-full h-full p-4 text-primary">
 							<path 
 								d={pawnSvgPath} 
 								fill="currentColor"
@@ -94,11 +93,10 @@ export default function Piece3D({
 						return (
 							<div
 								key={idx}
-								className="absolute inset-0 flex items-center justify-center pointer-events-none"
+								className="absolute inset-0 flex items-center  justify-center pointer-events-none"
 								style={{
 									transform: `translateZ(${zPosition}px)`,
 									backfaceVisibility: 'visible',
-									color: '#b45309', // Tom escuro amadeirado/dourado nas laterais (amber-700)
 									filter: `brightness(${brightness}%) contrast(1.15)`
 								}}
 							>
@@ -126,7 +124,7 @@ export default function Piece3D({
 							filter: 'drop-shadow(0px 6px 12px rgba(0,0,0,0.4))'
 						}}
 					>
-						<svg viewBox="0 0 24 24" className="w-full h-full p-4 text-amber-400">
+						<svg viewBox="0 0 24 24" className="w-full h-full p-4 text-primary">
 							<path 
 								d={pawnSvgPath} 
 								fill="currentColor"

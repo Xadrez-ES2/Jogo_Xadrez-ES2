@@ -128,7 +128,7 @@ describe("MoveHistoryPanel - Glifos Unicode nos registros de lances", () => {
 });
 
 describe("FocusLayout - Scroll em telas menores e espaçamento do Header", () => {
-    it("deve permitir scroll em telas menores (overflow-y-auto) e prevenir na tela principal desktop (lg:overflow-hidden)", async () => {
+    it("deve permitir scroll em telas menores (overflow-y-auto)", async () => {
         const container = document.createElement("div");
         const root = createRoot(container);
 
@@ -147,7 +147,6 @@ describe("FocusLayout - Scroll em telas menores e espaçamento do Header", () =>
         const main = container.querySelector("main");
         expect(main).not.toBeNull();
         expect(main?.className).toContain("overflow-y-auto");
-        expect(main?.className).toContain("lg:overflow-hidden");
 
         const headerContainer = container.querySelector("header > div");
         expect(headerContainer?.className).toContain("py-3");

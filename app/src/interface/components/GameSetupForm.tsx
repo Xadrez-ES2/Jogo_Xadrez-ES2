@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { GameMode, GameSetup, TimeControlOption } from "../types/gameSetup";
+import type { GameMode, GameSetup, TimeControlOption, PlayerColorChoice } from "../types/gameSetup";
 import { gameModeLabels, TIME_PRESETS_MS } from "../types/gameSetup";
 import { Button } from "./ui/Button";
 
@@ -7,7 +7,7 @@ export function GameSetupForm({ onStart }: { onStart: (setup: GameSetup) => void
     const [mode, setMode] = useState<GameMode>("human-ai");
     const [difficulty, setDifficulty] = useState<GameSetup["difficulty"]>("easy");
     const [timeOption, setTimeOption] = useState<TimeControlOption>("10min");
-    const [customMinutes, setCustomMinutes] = useState<number>(3);
+    const [playerColor, setPlayerColor] = useState<PlayerColorChoice>("random");
     const hasAI = mode !== "human-human";
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -21,38 +21,44 @@ export function GameSetupForm({ onStart }: { onStart: (setup: GameSetup) => void
                     return TIME_PRESETS_MS["5min"];
                 case "2min":
                     return TIME_PRESETS_MS["2min"];
+                case "1min":
+                    return TIME_PRESETS_MS["1min"];
                 case "none":
                     return null;
-                case "custom":
-                    return Math.max(1, customMinutes) * 60 * 1000;
             }
         })();
+
+        // Resolve "random" into a concrete color before passing to the game session
+        const resolvedColor: PlayerColorChoice =
+            playerColor === "random"
+                ? Math.random() < 0.5 ? "white" : "black"
+                : playerColor;
 
         onStart({
             mode,
             difficulty,
             timeLimitMs,
             timeOption,
-            customMinutes: timeOption === "custom" ? customMinutes : undefined,
+            playerColor: hasAI ? resolvedColor : undefined,
         });
     }
 
     return (
-        <div className="flex flex-1 items-center justify-center px-6 py-6">
+        <div className="w-full px-4 py-6 sm:px-6">
             <form
-                className="w-full max-w-lg rounded-xl border border-border bg-surface p-6"
+                className="mx-auto w-full max-w-lg rounded-xl border border-border bg-surface px-6 py-5"
                 onSubmit={handleSubmit}
             >
                 <h1 className="font-display text-2xl font-semibold">Nova partida</h1>
 
                 {/* Tipo de jogo */}
-                <fieldset className="mt-6">
+                <fieldset className="mt-5">
                     <legend className="mb-3 font-semibold">Tipo de jogo</legend>
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2">
                         {(Object.keys(gameModeLabels) as GameMode[]).map((value) => (
                             <label
                                 key={value}
-                                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 ${
+                                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${
                                     mode === value ? "border-accent bg-surface-alt" : "border-border"
                                 }`}
                             >
@@ -71,7 +77,7 @@ export function GameSetupForm({ onStart }: { onStart: (setup: GameSetup) => void
 
                 {/* Dificuldade da IA */}
                 {hasAI && (
-                    <div className="mt-6">
+                    <div className="mt-5">
                         <label htmlFor="game-difficulty" className="block font-semibold">
                             Dificuldade da IA
                         </label>
@@ -81,7 +87,7 @@ export function GameSetupForm({ onStart }: { onStart: (setup: GameSetup) => void
                             onChange={(event) =>
                                 setDifficulty(event.target.value as GameSetup["difficulty"])
                             }
-                            className="mt-3 w-full rounded-lg border border-border bg-surface-alt p-3 text-text-primary"
+                            className="mt-2 w-full rounded-lg border border-border bg-surface-alt p-3 text-text-primary"
                         >
                             <option value="easy">Fácil</option>
                             <option value="medium">Médio</option>
@@ -90,66 +96,76 @@ export function GameSetupForm({ onStart }: { onStart: (setup: GameSetup) => void
                     </div>
                 )}
 
+                {/* Escolha da cor das peças */}
+                {mode === "human-ai" && (
+                    <fieldset className="mt-5">
+                        <legend className="mb-3 font-semibold">Sua cor</legend>
+                        <div className="grid grid-cols-3 gap-3">
+                            {(
+                                [
+                                    { value: "random", label: "Aleatório", icon: "🎲" },
+                                    { value: "white",  label: "Brancas",   icon: "♔" },
+                                    { value: "black",  label: "Pretas",    icon: "♚" },
+                                ] as { value: PlayerColorChoice; label: string; icon: string }[]
+                            ).map(({ value, label, icon }) => (
+                                <label
+                                    key={value}
+                                    className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border p-3 text-sm font-medium transition-colors ${
+                                        playerColor === value
+                                            ? "border-accent bg-surface-alt text-text-primary"
+                                            : "border-border text-text-muted hover:border-accent/50"
+                                    }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="player-color"
+                                        value={value}
+                                        checked={playerColor === value}
+                                        onChange={() => setPlayerColor(value)}
+                                        className="sr-only"
+                                    />
+                                    <span className="text-2xl leading-none" aria-hidden="true">{icon}</span>
+                                    {label}
+                                </label>
+                            ))}
+                        </div>
+                    </fieldset>
+                )}
+
                 {/* Opções de tempo de cada jogador */}
-                <fieldset className="mt-6">
+                <fieldset className="mt-5">
                     <legend className="mb-3 font-semibold">Tempo de cada jogador</legend>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        <label
-                            className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${
-                                timeOption === "10min"
-                                    ? "border-accent bg-surface-alt text-text-primary"
-                                    : "border-border text-text-muted hover:border-accent/50"
-                            }`}
-                        >
-                            <input
-                                type="radio"
-                                name="time-option"
-                                value="10min"
-                                checked={timeOption === "10min"}
-                                onChange={() => setTimeOption("10min")}
-                                className="accent-accent"
-                            />
-                            10 min
-                        </label>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {(
+                            [
+                                { value: "10min", label: "10 min" },
+                                { value: "5min",  label: "5 min"  },
+                                { value: "2min",  label: "2 min"  },
+                                { value: "1min",  label: "1 min"  },
+                            ] as { value: TimeControlOption; label: string }[]
+                        ).map(({ value, label }) => (
+                            <label
+                                key={value}
+                                className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${
+                                    timeOption === value
+                                        ? "border-accent bg-surface-alt text-text-primary"
+                                        : "border-border text-text-muted hover:border-accent/50"
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="time-option"
+                                    value={value}
+                                    checked={timeOption === value}
+                                    onChange={() => setTimeOption(value)}
+                                    className="accent-accent"
+                                />
+                                {label}
+                            </label>
+                        ))}
 
                         <label
-                            className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${
-                                timeOption === "5min"
-                                    ? "border-accent bg-surface-alt text-text-primary"
-                                    : "border-border text-text-muted hover:border-accent/50"
-                            }`}
-                        >
-                            <input
-                                type="radio"
-                                name="time-option"
-                                value="5min"
-                                checked={timeOption === "5min"}
-                                onChange={() => setTimeOption("5min")}
-                                className="accent-accent"
-                            />
-                            5 min
-                        </label>
-
-                        <label
-                            className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${
-                                timeOption === "2min"
-                                    ? "border-accent bg-surface-alt text-text-primary"
-                                    : "border-border text-text-muted hover:border-accent/50"
-                            }`}
-                        >
-                            <input
-                                type="radio"
-                                name="time-option"
-                                value="2min"
-                                checked={timeOption === "2min"}
-                                onChange={() => setTimeOption("2min")}
-                                className="accent-accent"
-                            />
-                            2 min
-                        </label>
-
-                        <label
-                            className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${
+                            className={`col-span-2 sm:col-span-4 flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${
                                 timeOption === "none"
                                     ? "border-accent bg-surface-alt text-text-primary"
                                     : "border-border text-text-muted hover:border-accent/50"
@@ -165,47 +181,7 @@ export function GameSetupForm({ onStart }: { onStart: (setup: GameSetup) => void
                             />
                             Sem tempo
                         </label>
-
-                        <label
-                            className={`col-span-2 sm:col-span-2 flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${
-                                timeOption === "custom"
-                                    ? "border-accent bg-surface-alt text-text-primary"
-                                    : "border-border text-text-muted hover:border-accent/50"
-                            }`}
-                        >
-                            <input
-                                type="radio"
-                                name="time-option"
-                                value="custom"
-                                checked={timeOption === "custom"}
-                                onChange={() => setTimeOption("custom")}
-                                className="accent-accent"
-                            />
-                            Tempo customizado
-                        </label>
                     </div>
-
-                    {/* Campo de entrada para tempo customizado */}
-                    {timeOption === "custom" && (
-                        <div className="mt-3 flex items-center gap-3 rounded-lg border border-border bg-surface-alt p-3">
-                            <label htmlFor="custom-minutes" className="text-sm font-medium text-text-muted">
-                                Duração por jogador:
-                            </label>
-                            <input
-                                id="custom-minutes"
-                                type="number"
-                                min="1"
-                                max="180"
-                                value={customMinutes}
-                                onChange={(e) => {
-                                    const val = parseInt(e.target.value, 10);
-                                    setCustomMinutes(Number.isNaN(val) ? 1 : Math.max(1, Math.min(180, val)));
-                                }}
-                                className="w-24 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-sm text-text-primary focus:border-accent focus:outline-none"
-                            />
-                            <span className="text-xs text-text-muted">min</span>
-                        </div>
-                    )}
                 </fieldset>
 
                 <Button type="submit" className="mt-6">

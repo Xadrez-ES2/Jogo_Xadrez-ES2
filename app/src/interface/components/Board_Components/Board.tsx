@@ -66,13 +66,13 @@ interface BoardProps {
     */
     orientation?: PieceColor;
 
-    /**
-     * Lance que deve ser animado (peça deslizando de origem → destino).
-     * Durante o deslocamento, a peça é ocultada do grid estático para evitar duplicação.
-     */
+    /*
+        Lance que deve ser animado (peça deslizando de origem → destino).
+        Durante o deslocamento, a peça é ocultada do grid estático para evitar duplicação.
+    */
     animatingMove?: AnimatingMove | null;
     
-    /** Chamado quando a animação de movimento termina. */
+    /* Chamado quando a animação de movimento termina. */
     onAnimationEnd?: () => void;
 }
 
@@ -113,15 +113,15 @@ export function Board({
     }
 
     return (
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-2">
             
-            <div className="w-full max-w-[560px]">
+            <div className="w-full max-w-[560px] lg:max-w-[min(560px,calc(100vh-190px))]">
                 
                 <PlayerBar player={topPlayer} capturedPieces={topCapturedPieces} remainingMs={topPlayer ? clockTimes?.[topPlayer.color] : undefined} clockActive={topPlayer?.color === activeClock} />
             
             </div>
     
-            <div className="w-full max-w-[560px]">
+            <div className="w-full max-w-[560px] lg:max-w-[min(560px,calc(100vh-190px))]">
                 <div className="flex gap-2">
                     
                     {/* Régua de linhas (ranks), seguindo a orientação atual */}
@@ -257,7 +257,7 @@ export function Board({
             
             </div>
     
-            <div className="w-full max-w-[560px]">
+            <div className="w-full max-w-[560px] lg:max-w-[min(560px,calc(100vh-190px))]">
                 
                 <PlayerBar player={bottomPlayer} capturedPieces={bottomCapturedPieces} remainingMs={bottomPlayer ? clockTimes?.[bottomPlayer.color] : undefined} clockActive={bottomPlayer?.color === activeClock} />
             

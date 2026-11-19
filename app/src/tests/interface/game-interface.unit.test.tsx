@@ -12,15 +12,8 @@ import type { PlayedMove } from "../../interface/hooks/useGameMoves";
 // @ts-expect-error React act environment flag
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-function setInputValue(input: HTMLInputElement, value: string) {
-    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-    nativeSetter?.call(input, value);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-}
-
 describe("GameSetupForm - Opções de tempo", () => {
-    it("deve renderizar as 5 opções de tempo: 10 min, 5 min, 2 min, Sem tempo e Tempo customizado", async () => {
+    it("deve renderizar as 5 opções de tempo: 10 min, 5 min, 2 min, 1 min e Sem tempo", async () => {
         const container = document.createElement("div");
         const root = createRoot(container);
 
@@ -32,8 +25,8 @@ describe("GameSetupForm - Opções de tempo", () => {
         expect(labels.some((text) => text?.includes("10 min"))).toBe(true);
         expect(labels.some((text) => text?.includes("5 min"))).toBe(true);
         expect(labels.some((text) => text?.includes("2 min"))).toBe(true);
+        expect(labels.some((text) => text?.includes("1 min"))).toBe(true);
         expect(labels.some((text) => text?.includes("Sem tempo"))).toBe(true);
-        expect(labels.some((text) => text?.includes("Tempo customizado"))).toBe(true);
 
         await act(async () => {
             root.unmount();
@@ -161,44 +154,7 @@ describe("GameSetupForm - Opções de tempo", () => {
         });
     });
 
-    it("deve exibir campo de entrada quando 'Tempo customizado' é selecionado e calcular o tempo em ms", async () => {
-        const container = document.createElement("div");
-        const root = createRoot(container);
-        const onStart = vi.fn();
-
-        await act(async () => {
-            root.render(<GameSetupForm onStart={onStart} />);
-        });
-
-        const customInput = container.querySelector('input[value="custom"]') as HTMLInputElement;
-        await act(async () => {
-            customInput.click();
-        });
-
-        const minutesInput = container.querySelector("#custom-minutes") as HTMLInputElement;
-        expect(minutesInput).not.toBeNull();
-
-        await act(async () => {
-            setInputValue(minutesInput, "15");
-        });
-
-        const form = container.querySelector("form");
-        await act(async () => {
-            form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-        });
-
-        expect(onStart).toHaveBeenCalledWith(
-            expect.objectContaining({
-                timeLimitMs: 15 * 60 * 1000,
-                timeOption: "custom",
-                customMinutes: 15,
-            })
-        );
-
-        await act(async () => {
-            root.unmount();
-        });
-    });
+    
 });
 
 describe("MoveHistoryPanel - Botões compactos de Pausar e Desistir", () => {

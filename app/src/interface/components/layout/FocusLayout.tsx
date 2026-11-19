@@ -17,27 +17,28 @@ export function FocusLayout() {
             
             <header className="shrink-0 border-b border-border bg-background/90 backdrop-blur">
                 
-                <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-1.5">
+                <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
                     <NavLink
                         to="/"
-                        className="flex items-center gap-2 font-display text-base font-semibold text-text-primary transition-colors hover:text-accent"
+                        className="flex items-center gap-2.5 rounded-lg px-2 py-1 font-display text-base font-semibold text-text-primary transition-colors hover:bg-surface-alt/60 hover:text-accent"
                     >
-                        <span aria-hidden="true" className="text-lg text-accent">
+                        <span aria-hidden="true" className="text-xl text-accent">
                             ♞
                         </span>
                         Voltar
                     
                     </NavLink>
             
-                    <div className="flex flex-wrap items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-4 sm:gap-6">
                         <AccountControls />
+                        <span className="hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
                         <ThemeSwitcher />
                     </div>
                 </div>
             
             </header>
     
-            <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
                 <Outlet />
             </main>
         

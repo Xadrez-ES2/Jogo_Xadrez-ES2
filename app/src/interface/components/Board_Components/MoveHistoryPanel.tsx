@@ -1,12 +1,50 @@
 import { useEffect, useRef } from "react";
 import type { PlayedMove } from "../../hooks/useGameMoves";
+import type { PieceColor, PieceType } from "../../types/pieces";
+import type { PromotionPieceType } from "../../../engine";
 
-function label(move?: PlayedMove) {
+export const PIECE_UNICODE_GLYPHS: Record<PieceColor, Record<Exclude<PieceType, "pawn">, string>> = {
+    white: {
+        king: "♔",
+        queen: "♕",
+        rook: "♖",
+        bishop: "♗",
+        knight: "♘",
+    },
+    black: {
+        king: "♚",
+        queen: "♛",
+        rook: "♜",
+        bishop: "♝",
+        knight: "♞",
+    },
+};
+
+export const PROMOTION_UNICODE_GLYPHS: Record<PieceColor, Record<PromotionPieceType, string>> = {
+    white: {
+        q: "♕",
+        r: "♖",
+        b: "♗",
+        n: "♘",
+    },
+    black: {
+        q: "♛",
+        r: "♜",
+        b: "♝",
+        n: "♞",
+    },
+};
+
+export function label(move?: PlayedMove) {
     if (!move) return "—";
     if (move.castle === "kingSide") return "O-O";
     if (move.castle === "queenSide") return "O-O-O";
 
-    const promotionSymbol = move.promotion ? `=${move.promotion.toUpperCase()}` : "";
+    const color: PieceColor = move.color ?? "white";
+    const promoGlyph = move.promotion
+        ? (PROMOTION_UNICODE_GLYPHS[color]?.[move.promotion] ?? move.promotion.toUpperCase())
+        : "";
+    const promotionSymbol = promoGlyph ? `=${promoGlyph}` : "";
 
     if (move.piece === "pawn") {
         return (move.capture
@@ -14,15 +52,7 @@ function label(move?: PlayedMove) {
             : move.to) + promotionSymbol;
     }
 
-    const symbols: Record<string, string> = {
-        knight: "N",
-        bishop: "B",
-        rook: "R",
-        queen: "Q",
-        king: "K",
-    };
-
-    const symbol = symbols[move.piece];
+    const symbol = PIECE_UNICODE_GLYPHS[color]?.[move.piece as Exclude<PieceType, "pawn">] ?? move.piece;
 
     return (move.capture
         ? `${symbol}x${move.to}`
@@ -95,21 +125,25 @@ export function MoveHistoryPanel({
     // Scroll automático para o lance em foco
     const focusedRowRef = useRef<HTMLTableRowElement | null>(null);
     useEffect(() => {
-        focusedRowRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        focusedRowRef.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
     }, [focusedMoveIndex]);
 
     function handleKeyDown(event: React.KeyboardEvent) {
         if (event.key === "ArrowLeft") {
             event.preventDefault();
+            event.stopPropagation();
             onGoBack?.();
         } else if (event.key === "ArrowRight") {
             event.preventDefault();
+            event.stopPropagation();
             onGoForward?.();
         } else if (event.key === "ArrowUp") {
             event.preventDefault();
+            event.stopPropagation();
             onGoToStart?.();
         } else if (event.key === "ArrowDown") {
             event.preventDefault();
+            event.stopPropagation();
             onGoToEnd?.();
         }
     }
@@ -119,11 +153,11 @@ export function MoveHistoryPanel({
             tabIndex={0}
             onKeyDown={handleKeyDown}
             aria-label="Painel de Histórico de jogadas"
-            className="rounded-xl border border-border bg-surface p-5 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+            className="rounded-xl border border-border bg-surface p-3.5 sm:p-4 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <h2 className="font-display text-lg font-semibold text-text-primary">Histórico de jogadas</h2>
+                    <h2 className="font-display text-base font-semibold text-text-primary">Histórico de jogadas</h2>
                     <span className="text-xs text-text-muted" title="Navegável pelas setas do teclado (← e →)">(← / →)</span>
                 </div>
                 <span className="font-mono text-xs text-text-muted">{moves.length} lance{moves.length === 1 ? "" : "s"}</span>
@@ -131,7 +165,7 @@ export function MoveHistoryPanel({
 
             {/* Banner: modo de visualização de histórico */}
             {isViewingHistory && (
-                <div className="mt-3 flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2">
+                <div className="mt-2 flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-2.5 py-1.5">
                     <span className="text-xs text-accent">Visualizando histórico</span>
                     <button
                         type="button"
@@ -144,7 +178,7 @@ export function MoveHistoryPanel({
             )}
 
             {/* Botões de navegação rápida e ações da partida */}
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-1">
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
                 <HistoryNavButton onClick={onGoToStart} title="Início da partida (Seta cima)" aria-label="Ir ao início da partida">
                     {/* |< */}
                     <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
@@ -229,7 +263,7 @@ export function MoveHistoryPanel({
                 )}
             </div>
 
-            <div className="mt-4 max-h-60 overflow-y-auto" aria-live="polite">
+            <div className="mt-2.5 max-h-36 sm:max-h-40 lg:max-h-44 overflow-y-auto" aria-live="polite">
                 {rows.length ? (
                     <table className="w-full border-collapse text-sm">
                         <thead>

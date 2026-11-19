@@ -131,15 +131,19 @@ export function MoveHistoryPanel({
     function handleKeyDown(event: React.KeyboardEvent) {
         if (event.key === "ArrowLeft") {
             event.preventDefault();
+            event.stopPropagation();
             onGoBack?.();
         } else if (event.key === "ArrowRight") {
             event.preventDefault();
+            event.stopPropagation();
             onGoForward?.();
         } else if (event.key === "ArrowUp") {
             event.preventDefault();
+            event.stopPropagation();
             onGoToStart?.();
         } else if (event.key === "ArrowDown") {
             event.preventDefault();
+            event.stopPropagation();
             onGoToEnd?.();
         }
     }

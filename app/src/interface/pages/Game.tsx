@@ -36,7 +36,14 @@ export function Game() {
 function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => void }) {
 	// ── Autenticação ──
 	const { user } = useAuth();
-	const player = user ? { ...currentUser, id: user.uid, name: user.displayName, avatarUrl: user.photoURL ?? "" } : currentUser;
+
+	// ── Cor do Jogador (considera a escolha feita no setup) ──
+	const playerColor = (setup.playerColor === "black" ? "black" : "white") as PieceColor;
+	const opponentColor: PieceColor = playerColor === "white" ? "black" : "white";
+
+	const player = user
+		? { ...currentUser, id: user.uid, name: user.displayName, avatarUrl: user.photoURL ?? "", color: playerColor }
+		: { ...currentUser, color: playerColor };
 
 	// ── Lógica do Jogo ──
 	const {
@@ -62,21 +69,25 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 
 	const localGame = setup.mode === "human-human";
 
-	const canPlay = localGame || (setup.mode === "human-ai" && activeColor === currentUser.color);
+	const canPlay = localGame || (setup.mode === "human-ai" && activeColor === playerColor);
 
 	// ── Turno da I.A. ──
-	const aiTurn = setup.mode === "ai-ai" || (setup.mode === "human-ai" && activeColor !== currentUser.color);
+	const aiTurn = setup.mode === "ai-ai" || (setup.mode === "human-ai" && activeColor !== playerColor);
 
 	// ── Definição do Oponente ──
-	const opponent = localGame ? { ...botOpponent, id: "local-black", name: "Pessoa 2 (pretas)", isBot: false, rating: undefined } : setup.mode === "ai-ai" ? { ...botOpponent, name: "IA (pretas)" } : botOpponent;
+	const opponent = localGame
+		? { ...botOpponent, id: "local-black", name: "Pessoa 2 (pretas)", isBot: false, rating: undefined }
+		: setup.mode === "ai-ai"
+		? { ...botOpponent, name: "IA (pretas)" }
+		: { ...botOpponent, color: opponentColor };
 
 	// ── Peças capturadas (Player de cima e de abaixo) ordenadas por valor ──
 	const topCapturedPieces = useMemo(() => {
-		const raw = history.filter((move) => move.color === opponent.color && move.capturedPiece).map((move) => move.capturedPiece!);
+		const raw = history.filter((move) => move.color === opponentColor && move.capturedPiece).map((move) => move.capturedPiece!);
 		return sortCapturedPieces(raw);
-	}, [history, opponent.color]);
+	}, [history, opponentColor]);
 
-	const bottomColor = setup.mode === "ai-ai" ? "white" : player.color;
+	const bottomColor = setup.mode === "ai-ai" ? "white" : playerColor;
 
 	const bottomCapturedPieces = useMemo(() => {
 		const raw = history.filter((move) => move.color === bottomColor && move.capturedPiece).map((move) => move.capturedPiece!);
@@ -203,10 +214,10 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 		}
 		undoVersion.current += 1;
 		// Contra IA: volta 2 meio-lances (lance da IA + do jogador)
-		// Exceto se a partida acabou no lance do humano (última cor = currentUser.color)
+		// Exceto se a partida acabou no lance do humano (última cor = playerColor)
 		if (setup.mode === "human-ai") {
 			const lastPlayedColor = history.at(-1)?.color;
-			const plies = lastPlayedColor !== currentUser.color ? 2 : 1;
+			const plies = lastPlayedColor !== playerColor ? 2 : 1;
 			undo(plies);
 		} else {
 			undo(1);
@@ -246,7 +257,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 		if (gameStatus === "checkmate") {
 			const winner = activeColor === "white" ? "black" : "white";
 			finishGame({
-				outcome: winner === currentUser.color ? "victory" : "defeat",
+				outcome: winner === playerColor ? "victory" : "defeat",
 				reason: `Xeque-mate. Vitória das ${winner === "white" ? "brancas" : "pretas"}.`,
 			}, "checkmate");
 		} else if (gameStatus === "fifty-moves") {
@@ -288,19 +299,19 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 
 	const handleTimeout = useCallback((color: PieceColor) => {
 		const winner = color === "white" ? "black" : "white";
-		const outcome = winner === currentUser.color ? "victory" : "defeat";
+		const outcome = winner === playerColor ? "victory" : "defeat";
 		const winnerName = winner === "white" ? "brancas" : "pretas";
 		const loserName = color === "white" ? "brancas" : "pretas";
 		const reason = setup.mode === "human-human"
 			? `O tempo das ${loserName} acabou. Vitória das ${winnerName}.`
 			: setup.mode === "ai-ai"
 				? `O tempo da IA das ${loserName} acabou. Vitória da IA das ${winnerName}.`
-				: color === currentUser.color ? "Seu tempo acabou. Vitória do Bot." : "O tempo do Bot acabou. Você venceu.";
+				: color === playerColor ? "Seu tempo acabou. Vitória do Bot." : "O tempo do Bot acabou. Você venceu.";
 		finishGame({
 			outcome,
 			reason,
 		}, "timeout");
-	}, [finishGame, setup.mode]);
+	}, [finishGame, setup.mode, playerColor]);
 
 	const clockTimes = useChessClock({
 		activeColor,
@@ -377,6 +388,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 					onSquareContextMouseUp={handleSquareContextMouseUp}
 					animatingMove={historyNav.isViewingHistory ? undefined : animatingMove}
 					onAnimationEnd={clearAnimation}
+					orientation={setup.mode === "ai-ai" ? "white" : playerColor}
 				/>
 
 				<aside className="flex flex-col gap-3 lg:gap-3.5">
@@ -431,10 +443,11 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 					/>
 
 					<div className="flex gap-2">
-						{result && (
+						{result ? 
 							<Button onClick={restart} disabled={saving} className="flex-1">Nova partida</Button>
-						)}
-						<Button variant="ghost" onClick={restart} disabled={saving} className="flex-1">Configurar nova partida</Button>
+							:
+							<Button variant="ghost" onClick={restart} disabled={saving} className="flex-1">Configurar nova partida</Button>
+						}
 					</div>
 				</aside>
 			</div>

@@ -91,13 +91,12 @@ export function Square({
             )}
 
             {/* Destaque de xeque — sobrepõe com um tom de perigo (VERIFICAR ESTILIZAÇÃO) */}
-            {isCheck && <span className="absolute inset-0 bg-danger/40" aria-hidden="true" />}
+            {isCheck && <span className="absolute inset-0 bg-danger/50" aria-hidden="true" />}
 
             {/* Anotação manual do jogador (botão direito para setas) */}  
-            {isAnnotated && (
-                // "absolute inset-0 ring-2 ring-inset bg-danger/35" 
+            {isAnnotated && ( 
                 <div 
-                    className="absolute size-full bg-danger"
+                    className={`absolute size-full ${isLight? "bg-danger/50" : "bg-danger"}`}
                     aria-hidden="true"
                 />
             )}

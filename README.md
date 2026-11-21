@@ -148,8 +148,6 @@ Os três módulos têm testes automatizados com Vitest, organizados em `app/src/
 
 Nenhum teste acessa o Firebase real: autenticação e histórico são substituídos por versões falsas, e as configurações de teste zeram as credenciais.
 
-📄 Detalhes: [`docs/TESTING.md`](docs/TESTING.md) (estratégia completa da interface) · [`docs/TESTES-APRESENTACAO.md`](docs/TESTES-APRESENTACAO.md) (resumo para apresentação)
-
 ### Integração contínua
 
 A cada push ou pull request para a `main`, o GitHub Actions (`.github/workflows/CI.yml`):
@@ -168,9 +166,7 @@ Jogo_Xadrez-ES2/
 ├── README.md
 ├── LICENSE
 ├── .github/workflows/CI.yml   Pipeline de testes, build e deploy
-├── docs/                      Artefatos do projeto e documentação de testes
-│   ├── TESTING.md
-│   └── TESTES-APRESENTACAO.md
+├── docs/                      Artefatos do projeto e documentação
 └── app/                       Aplicação Vite
     ├── package.json
     ├── index.html

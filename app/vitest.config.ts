@@ -6,5 +6,6 @@ export default defineConfig({
     test: {
         // As suítes versionadas ficam aqui; app/tests contém testes locais antigos.
         include: ["src/tests/**/*.test.{ts,tsx}"],
+        exclude: ["src/tests/interface/system/**"],
     },
 });

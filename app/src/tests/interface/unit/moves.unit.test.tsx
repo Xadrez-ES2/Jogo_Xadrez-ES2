@@ -145,3 +145,91 @@ describe("U-HIST — navegação visual isolada do jogo real", () => {
         expect(snapshots).toEqual(before);
     });
 });
+
+describe("U-MOV-ESPECIAL — registro de lances especiais com engine substituída", () => {
+    function withPieces(turn: "w" | "b", pieces: [number, number, Piece][], enPassant: Square | null = null): GameState {
+        const base = fixture(turn);
+        const board: (Piece | null)[][] = Array.from({ length: 8 }, () => Array<Piece | null>(8).fill(null));
+        for (const [row, col, piece] of pieces) board[row][col] = piece;
+        return { ...base, board, internal: { ...base.internal, enPassant } };
+    }
+    const stateOf = (game: GameState) => ({ game, history: [], snapshots: [game], animatingMove: null });
+
+    it.each([
+        ["brancas", "w", [3, 4], [2, 3], "b"],
+        ["pretas", "b", [4, 3], [5, 4], "w"],
+    ] as const)("registra en passant das %s como captura de peão", (_name, turn, from, to, victim) => {
+        const game = withPieces(turn, [[from[0], from[1], { type: "p", color: turn }]], [...to] as Square);
+        const next = gameMovesReducer(stateOf(game), { type: "play", move: { from: [...from] as Square, to: [...to] as Square } });
+        expect(next.history[0]).toMatchObject({ capture: true, capturedPiece: "pawn" });
+        expect(victim).not.toBe(turn);
+    });
+    it("não registra captura em diagonal sem alvo en passant correspondente", () => {
+        const pawn: Piece = { type: "p", color: "w" };
+        const noTarget = gameMovesReducer(stateOf(withPieces("w", [[3, 4, pawn]])), { type: "play", move: { from: [3, 4], to: [2, 3] } });
+        const otherTarget = gameMovesReducer(stateOf(withPieces("w", [[3, 4, pawn]], [2, 5])), { type: "play", move: { from: [3, 4], to: [2, 3] } });
+        const straight = gameMovesReducer(stateOf(withPieces("w", [[3, 4, pawn]], [2, 4])), { type: "play", move: { from: [3, 4], to: [2, 4] } });
+        const bishop = gameMovesReducer(stateOf(withPieces("w", [[3, 4, { type: "b", color: "w" }]], [2, 3])), { type: "play", move: { from: [3, 4], to: [2, 3] } });
+        for (const state of [noTarget, otherTarget, straight, bishop]) expect(state.history[0].capture).toBe(false);
+    });
+    it.each([[[7, 6], "kingSide"], [[7, 2], "queenSide"], [[7, 5], undefined]] as const)(
+        "identifica o roque pelo deslocamento do rei até %s", (to, castle) => {
+            const game = withPieces("w", [[7, 4, { type: "k", color: "w" }]]);
+            const next = gameMovesReducer(stateOf(game), { type: "play", move: { from: [7, 4], to: [...to] as Square } });
+            expect(next.history[0].castle).toBe(castle);
+        });
+    it("aplica a promoção escolhida pela IA junto com o lance", () => {
+        const promoted = fixture("b");
+        engine.promotePawn.mockReturnValue(promoted);
+        const game = withPieces("w", [[1, 0, { type: "p", color: "w" }]]);
+        const next = gameMovesReducer(stateOf(game), { type: "play", move: { from: [1, 0], to: [0, 0] }, promotion: "n" });
+        expect(engine.promotePawn).toHaveBeenCalledExactlyOnceWith(engine.applyMove.mock.results[0].value, "n");
+        expect(next.game).toBe(promoted);
+        expect(next.history[0].promotion).toBe("n");
+    });
+    it("altera somente o último registro ao promover com histórico longo", () => {
+        let state = gameMovesReducer(createMoveState(), { type: "play", move: e4 });
+        state = gameMovesReducer(state, { type: "play", move: e4 });
+        engine.promotePawn.mockReturnValue(fixture("b"));
+        const next = gameMovesReducer({ ...state, game: { ...state.game, pendingPromotion: [0, 4] } }, { type: "promote", piece: "r" });
+        expect(next.history.map((move) => move.promotion)).toEqual([undefined, "r"]);
+    });
+    it("o hook expõe promoção pendente, desfazer, escolha de promoção e reinício", async () => {
+        engine.applyMove.mockReturnValue({ ...fixture("b"), pendingPromotion: [0, 4] });
+        engine.promotePawn.mockReturnValue(fixture("b"));
+        const hook = await mountHook(useGameMoves, undefined);
+        await act(async () => hook.current.playAIMove(e4));
+        expect(hook.current.pendingPromotion).toBe("e8");
+        await act(async () => hook.current.choosePromotion("q"));
+        expect(hook.current.pendingPromotion).toBeUndefined();
+        expect(hook.current.lastMove?.promotion).toBe("q");
+        await act(async () => hook.current.undo(1));
+        expect(hook.current.history).toEqual([]);
+        await act(async () => hook.current.playAIMove(e4));
+        await act(async () => hook.current.clearAnimation());
+        expect(hook.current.animatingMove).toBeUndefined();
+        await act(async () => hook.current.resetMoves());
+        expect(hook.current.history).toEqual([]);
+    });
+});
+
+describe("U-HIST-LIMITES — navegação com dados incompletos", () => {
+    const history = [
+        { from: "e2", to: "e4", color: "white", piece: "pawn", capture: false },
+        { from: "e7", to: "e5", color: "black", piece: "pawn", capture: false },
+    ] as const;
+    it("avança a partir do vivo, navega além do fim e tolera snapshot ausente", async () => {
+        const hook = await mountHook(() => useHistoryNavigation([fixture()], [...history]), undefined);
+        expect(hook.current.viewGame).toBeUndefined();
+        expect(hook.current.viewPieces).toBeUndefined();
+        await act(async () => hook.current.goForward());
+        expect(hook.current.isViewingHistory).toBe(false);
+        await act(async () => hook.current.navigateTo(0));
+        expect(hook.current.viewIndex).toBe(0);
+        await act(async () => hook.current.navigateTo(5));
+        expect(hook.current.viewIndex).toBeNull();
+        await act(async () => { hook.current.navigateTo(0); });
+        await act(async () => hook.current.goToEnd());
+        expect(hook.current.isViewingHistory).toBe(false);
+    });
+});

@@ -76,8 +76,9 @@ export function Square({
             type="button"
             onClick={() => onSelect?.(id)}
             onContextMenu={(event) => event.preventDefault()}
-            onMouseDown={(event) => { if (!disabled) onContextMouseDown?.(id, event); }}
-            onMouseUp={(event) => { if (!disabled) onContextMouseUp?.(id, event); }}
+            /* O React não dispara eventos de mouse em <button disabled>: o ramo "desabilitado" é apenas defensivo. */
+            onMouseDown={(event) => { /* v8 ignore else -- @preserve */ if (!disabled) onContextMouseDown?.(id, event); }}
+            onMouseUp={(event) => { /* v8 ignore else -- @preserve */ if (!disabled) onContextMouseUp?.(id, event); }}
             aria-label={accessibleLabel}
             aria-pressed={isSelected}
             data-squareid={id}

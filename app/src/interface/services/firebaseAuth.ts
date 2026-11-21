@@ -1,7 +1,10 @@
 import type { User } from "firebase/auth";
 import type { AuthService, AuthUser } from "../types/auth";
 
+// Com Vite, import.meta.env sempre existe; o fallback só protege execuções fora do bundler.
+/* v8 ignore start -- @preserve */
 const env = import.meta.env ?? {};
+/* v8 ignore stop -- @preserve */
 const config = {
     apiKey: env.VITE_FIREBASE_API_KEY,
     authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,

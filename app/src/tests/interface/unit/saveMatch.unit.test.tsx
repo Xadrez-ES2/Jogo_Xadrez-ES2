@@ -45,6 +45,15 @@ describe("U-SALVAR — estado de salvamento da interface", () => {
         expect(hook.current.status).toBe("saved");
         expect(service.save).toHaveBeenCalledTimes(2);
     });
+    it("ignora a falha antiga quando a partida muda", async () => {
+        let failOld!: () => void;
+        service.save.mockImplementationOnce(() => new Promise<void>((_, fail) => { failOld = () => fail(new Error("offline")); }))
+            .mockResolvedValueOnce();
+        const hook = await mountHook<MatchRecord | null, ReturnType<typeof useSaveMatch>>(useSaveMatch, record);
+        await hook.rerender({ ...record, id: "partida-2" });
+        await act(async () => failOld());
+        expect(hook.current.status).toBe("saved");
+    });
     it("ignora a resposta antiga quando a partida muda", async () => {
         let finishOld!: () => void, finishNew!: () => void;
         service.save.mockImplementationOnce(() => new Promise<void>((done) => { finishOld = done; }))

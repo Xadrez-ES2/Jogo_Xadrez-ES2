@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { chooseMove } from "../../ai";
-import { getGameStatus, getLegalMoves } from "../../engine";
+import { getGameStatus, getLegalMoves, type GameStatus } from "../../engine";
 import { aiThinkTime } from "../utils/aiDelay";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
@@ -25,6 +25,19 @@ import { useSoundEffects } from "../hooks/useSoundEffects";
 import { useHistoryNavigation } from "../hooks/useHistoryNavigation";
 import { SoundToggleButton } from "../components/ui/SoundToggleButton";
 import { sortCapturedPieces } from "../utils/AuxFunctions";
+
+// Empates detectados pela engine e o motivo exibido ao jogador.
+// Fonte única: encerramento, som de fim de jogo e bloqueio da IA leem esta tabela.
+const DRAW_REASONS: Partial<Record<GameStatus, string>> = {
+	"fifty-moves": "Empate pela regra dos 50 lances.",
+	stalemate: "Empate por afogamento.",
+	"insufficient-material": "Empate por falta de peças.",
+	"threefold-repetition": "Empate por tripla repetição.",
+};
+
+function isGameOverStatus(status: GameStatus): boolean {
+	return status === "checkmate" || status in DRAW_REASONS;
+}
 
 // Componente principal da página de jogo. Gerencia o estado da partida.
 export function Game() {
@@ -118,10 +131,11 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 		}
 		prevHistoryLen.current = history.length;
 		const move = history.at(-1);
+		// Defensivo: se o histórico cresceu, sempre há um último lance.
+		/* v8 ignore if -- @preserve */
 		if (!move) return;
 
-		if (gameStatus === "checkmate" || gameStatus === "stalemate" ||
-		    gameStatus === "fifty-moves" || gameStatus === "insufficient-material") {
+		if (isGameOverStatus(gameStatus)) {
 			playSound("gameOver");
 		} else if (move.castle) {
 			playSound("castle");
@@ -141,13 +155,13 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	// Reseta a navegação quando o histórico muda (novo lance ou undo)
 	const prevSnapshotsLen = useRef(snapshots.length);
 	useEffect(() => {
-		if (snapshots.length !== prevSnapshotsLen.current) {
-			prevSnapshotsLen.current = snapshots.length;
-			// Se estava visualizando o histórico e um novo lance foi feito (não undo),
-			// retorna automaticamente ao modo ao vivo
-			if (snapshots.length > prevSnapshotsLen.current) {
-				returnToLive();
-			}
+		const previousLength = prevSnapshotsLen.current;
+		prevSnapshotsLen.current = snapshots.length;
+		// Se estava visualizando o histórico e um novo lance foi feito (não undo),
+		// retorna automaticamente ao modo ao vivo.
+		// (Antes, o tamanho era atualizado antes da comparação e o retorno nunca ocorria.)
+		if (snapshots.length > previousLength) {
+			returnToLive();
 		}
 	}, [snapshots.length, returnToLive]);
 
@@ -260,19 +274,15 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 				outcome: winner === playerColor ? "victory" : "defeat",
 				reason: `Xeque-mate. Vitória das ${winner === "white" ? "brancas" : "pretas"}.`,
 			}, "checkmate");
-		} else if (gameStatus === "fifty-moves") {
-			finishGame({ outcome: "draw", reason: "Empate pela regra dos 50 lances." }, "draw");
-		} else if (gameStatus === "stalemate") {
-			finishGame({ outcome: "draw", reason: "Empate por afogamento." }, "draw");
-		} else if (gameStatus === "insufficient-material") {
-			finishGame({ outcome: "draw", reason: "Empate por falta de peças." }, "draw");
+		} else {
+			const drawReason = DRAW_REASONS[gameStatus];
+			if (drawReason) finishGame({ outcome: "draw", reason: drawReason }, "draw");
 		}
 	}, [gameStatus, activeColor, finishGame]);
 
 	useEffect(() => {
 		if (!aiTurn || effectivePaused || result || pendingPromotion || finished.current
-			|| gameStatus === "checkmate" || gameStatus === "stalemate" || gameStatus === "fifty-moves"
-			|| gameStatus === "insufficient-material") return;
+			|| isGameOverStatus(gameStatus)) return;
 		const thinkTime = aiThinkTime(setup.difficulty, history.length, getLegalMoves(game).length);
 		let playTimer = 0;
 		const capturedVersion = undoVersion.current;
@@ -286,7 +296,9 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 			const promotes = piece?.type === "p" && (move.to[0] === 0 || move.to[0] === 7);
 			const remaining = Math.max(0, thinkTime - (performance.now() - start));
 			playTimer = window.setTimeout(() => {
-				// Se houve undo desde que começamos a calcular, descarta o resultado
+				// Se houve undo desde que começamos a calcular, descarta o resultado.
+				// Defensivo: o undo altera history.length e a limpeza do efeito já cancela este timer.
+				/* v8 ignore if -- @preserve */
 				if (undoVersion.current !== capturedVersion) return;
 				playAIMove(move, promotes ? "q" : undefined);
 			}, remaining);
@@ -343,6 +355,8 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 	}
 
 	function restart() {
+		// Defensivo: os botões de reinício ficam desabilitados enquanto a partida é salva.
+		/* v8 ignore else -- @preserve */
 		if (!saving) onNewGame();
 	}
 
@@ -356,6 +370,8 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 				return sq as import("../types/square").SquareId;
 			}
 		}
+		// Defensivo: em xeque, o rei da cor em turno sempre está no tabuleiro.
+		/* v8 ignore next -- @preserve */
 		return undefined;
 	})();
 
@@ -421,7 +437,7 @@ function GameSession({ setup, onNewGame }: { setup: GameSetup; onNewGame: () => 
 							<h2 className="font-display text-base font-semibold text-accent">Partida pausada</h2>
 							<p className="mt-1.5 text-xs text-text-muted">Partida das IAs pausada durante a consulta do histórico. Volte ao lance atual para retomar.</p>
 						</section>
-					) : <StatusPanel activeColor={activeColor} mode={setup.mode} />}
+					) : <StatusPanel activeColor={activeColor} mode={setup.mode} playerColor={playerColor} />}
 
 					<MoveHistoryPanel
 						moves={history}

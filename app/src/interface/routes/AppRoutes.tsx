@@ -8,6 +8,7 @@ import { FocusLayout } from "../components/layout/FocusLayout";
 import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
 import { Profile } from "../pages/Profile";
+import { NotFound } from "../pages/NotFound";
 
 /*
     Fonte única de verdade para as rotas da aplicação.
@@ -22,6 +23,8 @@ export const routeConfig: RouteConfig[] = [
     { path: "/login", label: "Login", element: Login, showInNav: false, inFocusLayout: true },
     { path: "/register", label: "Cadastrar", element: Register, showInNav: false, inFocusLayout: true },
     { path: "/profile", label: "Perfil", element: Profile, showInNav: false, inFocusLayout: false },
+    // Rota coringa (404): o React Router prioriza as rotas específicas, então ela só é usada quando nenhuma outra corresponde.
+    { path: "*", label: "Página não encontrada", element: NotFound, showInNav: false, inFocusLayout: false },
 ];
 
 export const navRoutes = routeConfig.filter((route) => route.showInNav);

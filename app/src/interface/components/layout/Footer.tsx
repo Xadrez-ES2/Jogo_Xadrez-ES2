@@ -71,9 +71,12 @@ export function Footer() {
 									className="h-40 w-full border-0"
 								/>
 							) : (
+								/* EMBED_URL é constante e sempre preenchida: o placeholder só aparece se ela for esvaziada. */
+								/* v8 ignore start -- @preserve */
 								<div className="flex h-40 w-full items-center justify-center px-4 text-center font-mono text-xs text-text-muted/60">
 									embed pendente — defina EMBED_URL
 								</div>
+								/* v8 ignore stop -- @preserve */
 							)}
 						</div>
 					

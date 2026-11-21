@@ -2,12 +2,12 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import { GameSetupForm } from "../../interface/components/GameSetupForm";
-import { MoveHistoryPanel } from "../../interface/components/Board_Components/MoveHistoryPanel";
-import { useChessClock } from "../../interface/hooks/useChessClock";
-import { useHistoryNavigation } from "../../interface/hooks/useHistoryNavigation";
-import { createGame } from "../../engine";
-import type { PlayedMove } from "../../interface/hooks/useGameMoves";
+import { GameSetupForm } from "../../../interface/components/GameSetupForm";
+import { MoveHistoryPanel } from "../../../interface/components/Board_Components/MoveHistoryPanel";
+import { useChessClock } from "../../../interface/hooks/useChessClock";
+import { useHistoryNavigation } from "../../../interface/hooks/useHistoryNavigation";
+import { createGame } from "../../../engine";
+import type { PlayedMove } from "../../../interface/hooks/useGameMoves";
 
 // @ts-expect-error React act environment flag
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;

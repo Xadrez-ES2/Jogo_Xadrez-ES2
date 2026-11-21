@@ -3,19 +3,23 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
-import { sortCapturedPieces } from "../../interface/utils/AuxFunctions";
-import { label, MoveHistoryPanel } from "../../interface/components/Board_Components/MoveHistoryPanel";
-import { PlayerBar } from "../../interface/components/Board_Components/PlayerBar";
-import { FocusLayout } from "../../interface/components/layout/FocusLayout";
-import { Game } from "../../interface/pages/Game";
-import { Home } from "../../interface/pages/Home";
-import { AuthProvider } from "../../interface/stores/AuthContext";
-import { ThemeProvider } from "../../interface/stores/ThemeContext";
-import type { PlayedMove } from "../../interface/hooks/useGameMoves";
-import type { PieceType } from "../../interface/types/pieces";
+import { sortCapturedPieces } from "../../../interface/utils/AuxFunctions";
+import { label, MoveHistoryPanel } from "../../../interface/components/Board_Components/MoveHistoryPanel";
+import { PlayerBar } from "../../../interface/components/Board_Components/PlayerBar";
+import { FocusLayout } from "../../../interface/components/layout/FocusLayout";
+import { Game } from "../../../interface/pages/Game";
+import { Home } from "../../../interface/pages/Home";
+import { AuthProvider } from "../../../interface/stores/AuthContext";
+import { ThemeProvider } from "../../../interface/stores/ThemeContext";
+import type { PlayedMove } from "../../../interface/hooks/useGameMoves";
+import type { PieceType } from "../../../interface/types/pieces";
+import type { AuthService } from "../../../interface/types/auth";
 
 // @ts-expect-error React act environment flag
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+// Sessão de visitante injetada: estes testes nunca usam o serviço Firebase real.
+const guest: AuthService = { configured: false, subscribe: () => () => {}, signIn: vi.fn(), signOut: vi.fn() };
 
 describe("sortCapturedPieces - Ordenação de peças capturadas", () => {
     it("deve ordenar peças capturadas por valor crescente: peão, cavalo, bispo, torre, dama, rei", () => {
@@ -135,7 +139,7 @@ describe("FocusLayout - Scroll em telas menores e espaçamento do Header", () =>
         await act(async () => {
             root.render(
                 <MemoryRouter>
-                    <AuthProvider>
+                    <AuthProvider service={guest}>
                         <ThemeProvider>
                             <FocusLayout />
                         </ThemeProvider>
@@ -171,7 +175,7 @@ describe("Modo IA vs IA - Pausar ao consultar histórico e despausar ao retornar
             root.render(
                 <MemoryRouter>
                     <ThemeProvider>
-                        <AuthProvider>
+                        <AuthProvider service={guest}>
                             <Game />
                         </AuthProvider>
                     </ThemeProvider>

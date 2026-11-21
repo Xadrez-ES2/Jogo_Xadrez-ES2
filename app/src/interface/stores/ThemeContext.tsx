@@ -27,6 +27,8 @@ function applyThemeToDocument(theme: Theme) {
 // Retorna o tema inicial, baseado no localStorage ou no tema padrão.
 function getInitialThemeId(): ThemeId {
 
+	// Proteção para renderização fora do navegador (a SPA sempre roda com window).
+	/* v8 ignore if -- @preserve */
 	if (typeof window === "undefined") return defaultThemeId;
 	
 	const stored = window.localStorage.getItem(STORAGE_KEY) as ThemeId | null;

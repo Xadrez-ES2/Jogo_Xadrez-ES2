@@ -5,6 +5,14 @@ export default defineConfig({
     plugins: [react()],
     test: {
         environment: "jsdom",
+        // Credenciais vazias: nenhum teste pode inicializar o Firebase real, mesmo com .env/.env.local presentes.
+        env: {
+            VITE_FIREBASE_API_KEY: "",
+            VITE_FIREBASE_AUTH_DOMAIN: "",
+            VITE_FIREBASE_PROJECT_ID: "",
+            VITE_FIREBASE_APP_ID: "",
+            VITE_FIRESTORE_ENABLED: "false",
+        },
         include: ["src/tests/interface/integration/**/*.test.tsx"],
         reporters: ["default", "json"],
         outputFile: { json: "coverage/interface-integration/test-results.json" },

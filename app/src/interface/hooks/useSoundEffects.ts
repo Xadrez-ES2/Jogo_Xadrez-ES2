@@ -2,17 +2,24 @@ import { useCallback, useEffect, useRef } from "react";
 
 /*
     Eventos de áudio suportados pelo jogo.
-    Mapeados para os arquivos em app/src/sounds.
+    Mapeados para os arquivos em app/public/sounds, servidos em `<base>/sounds/`.
 */
 export type SoundEvent = "move" | "capture" | "check" | "castle" | "gameOver" | "illegal";
 
-const SOUND_MAP: Record<SoundEvent, string> = {
-    move: "../../sounds/Move.mp3",
-    capture: "../../sounds/Capture.mp3",
-    check: "../../sounds/Check.mp3",
-    castle: "../../sounds/Castles.mp3",
-    gameOver: "../../sounds/Draw.mp3",
-    illegal: "../../sounds/Draw.mp3",
+/*
+    Os caminhos partem do `base` do Vite ("/" no dev, "/Jogo_Xadrez-ES2/" no GitHub Pages).
+    Caminhos relativos ("../../sounds/...") eram resolvidos a partir da URL da página e,
+    em produção, apontavam para fora do site (404 silencioso).
+*/
+const SOUNDS_BASE = `${import.meta.env.BASE_URL}sounds/`;
+
+export const SOUND_MAP: Record<SoundEvent, string> = {
+    move: `${SOUNDS_BASE}Move.mp3`,
+    capture: `${SOUNDS_BASE}Capture.mp3`,
+    check: `${SOUNDS_BASE}Check.mp3`,
+    castle: `${SOUNDS_BASE}Castles.mp3`,
+    gameOver: `${SOUNDS_BASE}Draw.mp3`,
+    illegal: `${SOUNDS_BASE}Draw.mp3`,
 };
 
 const STORAGE_KEY = "chess-muted";

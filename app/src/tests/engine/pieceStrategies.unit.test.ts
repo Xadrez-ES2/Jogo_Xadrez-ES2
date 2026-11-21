@@ -1,6 +1,10 @@
 import { expect, test } from 'vitest';
+import { createEmptyBoard } from '../../engine/board/board';
 import { boardFromFen } from '../../engine/board/notation_for_test';
+import { KnightStrategy } from '../../engine/pieces/knight';
+import { PawnStrategy } from '../../engine/pieces/pawn';
 import { QueenStrategy } from '../../engine/pieces/queen';
+import { RookStrategy } from '../../engine/pieces/rook';
 import type { Square } from '../../engine';
 
 test('dama central combina eixos com bloqueio e capturas diagonais', () => {
@@ -15,4 +19,14 @@ test('dama central combina eixos com bloqueio e capturas diagonais', () => {
 
   expect([...actual].sort()).toEqual([...expected].sort());
   expect(board).toEqual(before);
+});
+
+test.each([
+  { piece: 'cavalo', strategy: new KnightStrategy() },
+  { piece: 'torre', strategy: new RookStrategy() },
+  { piece: 'peão', strategy: new PawnStrategy() },
+])('$piece não gera movimentos a partir de uma casa vazia', ({ strategy }) => {
+  const board = createEmptyBoard();
+
+  expect(strategy.moves(board, [4, 4])).toEqual([]);
 });

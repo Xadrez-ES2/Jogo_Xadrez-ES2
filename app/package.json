@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "tsx --tsconfig tsconfig.app.json --test tests/*.test.tsx",
+    "test:engine": "vitest run --config vitest.engine.config.ts --configLoader runner",
+    "test:engine:unit": "npm run test:engine -- --exclude **/*.integration.test.*",
+    "test:engine:coverage": "npm run test:engine -- --coverage",
+    "test:engine:coverage:unit": "npm run test:engine:unit -- --coverage",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

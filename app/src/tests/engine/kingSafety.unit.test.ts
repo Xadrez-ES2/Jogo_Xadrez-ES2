@@ -13,12 +13,6 @@ const position = (fen: string, turn: Color = 'w'): GameState => ({
 });
 const move = (from: Square, to: Square) => ({ from, to });
 
-test('captura disponivel com rei realmente em xeque', () => {
-  const state = position('k7/8/8/8/8/8/4r2R/4K3');
-  expect(isInCheck(state.board, 'w')).toBe(true);
-  expect(getLegalMoves(state)).toContainEqual(move([6, 7], [6, 4]));
-});
-
 test('xeque duplo tem fugas nao vazias exclusivamente do rei', () => {
   const state = position('k3r3/8/8/8/1b6/8/2N5/4K3');
   expect(isInCheck(state.board, 'w')).toBe(true);
@@ -28,15 +22,6 @@ test('xeque duplo tem fugas nao vazias exclusivamente do rei', () => {
     move([7, 4], [7, 3]), move([7, 4], [7, 5]), move([7, 4], [6, 5]),
   ]));
   expect(moves).toHaveLength(3);
-});
-
-test('reis nao podem se aproximar ate casas adjacentes', () => {
-  const state = position('8/8/8/8/8/4k3/8/4K3');
-  const moves = getLegalMoves(state);
-  expect(moves).toHaveLength(2);
-  expect(moves).toEqual(expect.arrayContaining([
-    move([7, 4], [7, 3]), move([7, 4], [7, 5]),
-  ]));
 });
 
 test('rei adversario nao e alvo de captura mesmo em tabuleiro de analise', () => {

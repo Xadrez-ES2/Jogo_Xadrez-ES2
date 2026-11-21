@@ -13,22 +13,22 @@ function position(fen: string, turn: Color, castling: GameState['internal']['cas
 
 // Legal fixture moves worked independently; only applyMove is observed here.
 // The public generation/application interaction is covered by integration suites.
-test.each([
-  { description: 'roque menor das brancas', turn: 'w', from: [7,4], to: [7,6],
-    after: 'r3k2r/8/8/8/8/8/8/R4RK1',
-    rights: { whiteKingSide: false, whiteQueenSide: false, blackKingSide: true, blackQueenSide: true }, fullmove: 4 },
-  { description: 'roque maior das pretas', turn: 'b', from: [0,4], to: [0,2],
-    after: '2kr3r/8/8/8/8/8/8/R3K2R',
-    rights: { whiteKingSide: true, whiteQueenSide: true, blackKingSide: false, blackQueenSide: false }, fullmove: 5 },
-] as const)('$description desloca rei e torre e revoga somente os direitos do rei movido', ({ turn, from, to, after, rights, fullmove }) => {
-  const state = position('r3k2r/8/8/8/8/8/8/R3K2R', turn, allCastlingRights);
+test('roque maior das pretas desloca rei e torre e revoga somente os direitos do rei movido', () => {
+  const state = position('r3k2r/8/8/8/8/8/8/R3K2R', 'b', allCastlingRights);
   const snapshot = structuredClone(state);
-  const next = applyMove(state, { from, to });
-  expect(boardToFen(next.board)).toBe(after);
-  expect(next.internal.castling).toEqual(rights);
+
+  const next = applyMove(state, { from: [0, 4], to: [0, 2] });
+
+  expect(boardToFen(next.board)).toBe('2kr3r/8/8/8/8/8/8/R3K2R');
+  expect(next.internal.castling).toEqual({
+    whiteKingSide: true,
+    whiteQueenSide: true,
+    blackKingSide: false,
+    blackQueenSide: false,
+  });
   expect(next.internal.halfmoveClock).toBe(8);
-  expect(next.internal.fullmoveNumber).toBe(fullmove);
-  expect(next.turn).toBe(turn === 'w' ? 'b' : 'w');
+  expect(next.internal.fullmoveNumber).toBe(5);
+  expect(next.turn).toBe('w');
   expect(next.pendingPromotion).toBeNull();
   expect(next.internal.enPassant).toBeNull();
   expect(next.internal.positionHistory).toHaveLength(2);

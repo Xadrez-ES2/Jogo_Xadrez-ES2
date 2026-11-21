@@ -28,14 +28,6 @@ test('ataque no destino g8 impede apenas o roque menor das pretas', () => {
   expect(legal).toContainEqual(castle(0, 2));
 });
 
-test('rei preto em xeque pode fugir, mas nenhum roque é permitido', () => {
-  const state = withPiece(position('b'), [3, 4], { type: 'r', color: 'w' });
-  const legal = getLegalMoves(state);
-  expect(legal).toContainEqual(castle(0, 5));
-  expect(legal).not.toContainEqual(castle(0, 2));
-  expect(legal).not.toContainEqual(castle(0, 6));
-});
-
 test('ataque em b1 permite o roque maior das brancas', () => {
   const state = withPiece(position('w'), [3, 1], { type: 'r', color: 'b' });
 

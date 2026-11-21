@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
+    "test:interface:unit": "vitest run --config vitest.interface.unit.config.ts",
+    "coverage:interface:unit": "vitest run --config vitest.interface.unit.config.ts --coverage",
     "coverage": "vitest run --coverage --coverage.include=src/ai/**/*.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
